@@ -21,7 +21,7 @@ Commandments are prohibitions in a religion. They follow a system known as "comm
       <li>Love one another (2 pt): Killing a player of any sort loses favor.
       <li>Love your neighbor (1 pt): Killing another of the same religion loses favor.
       <li>No potioncraft (1 pt): Drinking a potion (willingly) loses favor; being hit by one does not.
-        <li>No enchanting (3 pt): Clicking with an enchanted tool or equipping enchanted armor loses favor; for armor, only the initial equip loses favor.
+        <li>No enchanting (3 pt): Clicking with an enchanted tool or equipping enchanted armor loses favor; for armor, only the initial equip loses favor. 
           <li>No cursing (1 pt): Applying a curse to an item loses favor
             <li>No wearing chestgear (5 pt): Equipping a chestgear item causes a loss in favor
               <li>No eating meat (2 pt): Eating a meat consumable that is NOT fish causes a loss in favor.
@@ -30,7 +30,7 @@ Commandments are prohibitions in a religion. They follow a system known as "comm
                     <li>No sleep (1 pt): Sleeping in a bed for more than a 30 seconds or skipping the night will cause a loss in favor.
                     </ul>
 <h4>Worship Methods</h1>
-Similar to commandments, worship system has something called "worship points." Worship is the actions taken at an altar that empower one's god to raise its level and powers; there can only be a maximum of 7 worship points expended (leveling can increase that) with a minimum of 1 and more difficult actions are worth less worship points (to facilitate the variety in worshiping methods) but also give more power to the god. Worship is performed through some action in relation to a Sacred Fire. 
+Similar to commandments, worship system has something called "worship points." Worship is the actions taken at an altar that empower one's god to raise its level and powers; there can only be a maximum of 7 worship points expended (leveling can increase that) with a minimum of 1 and more difficult actions are worth less worship points (to facilitate the variety in worshiping methods) but also give more power to the god. Worship is performed through some entity or item being put in a sacred fire or being killed with a Sacred Fire weapon. 
 <ul>
   <li>Human sacrifice (1 pt): Sacrifice a villager to the sacred fire, with a higher level and stock being worth more.
     <li>Hostile sacrifice (1 pt): Sacrifice a hostile mob to the sacred fire, with higher health worth more. Player sacrifice is also allowed under this.
@@ -62,15 +62,21 @@ A minimum of 4 worship condition points must be expended. Worship conditions are
             <h4>Mandates</h4>
 Mandates are actions that can be taken to increase a deity's favor. (Be wary that they can cancel out commandments, rendering a deity's favor ineffective) More difficult mandates are worth less mandate points but give more favor; a maximum of seven mandates can exist.
 <ul>
+  <li>Default mandate: Worship. By default, attending a worship gives you favor with a deity.
 <li>Kill nonbelievers (4 pt): Kill players and villagers who do not follow your religion
   <li>Convert nonbelievers (4 pt): Convert villagers to your religion
+    <li>Holy lands (4 pt): Increase the area of your deity's holy land.
     <li>Kill the undead (5 pt): Kill undead mobs
       <li>Kill the passive (6 pt): Kill all passive mobs.
         <li>Kill the neutral (3 pt): Kill mobs such as endermen and zombie pigmen who are neutral
           <li>Kill the higher beasts (1 pt): Kill evokers, elder guardians, wither, ender dragons, and other 'renewable' boss mobs
-            <li>Protect the helpless (1 pt): Become a Hero of the Village
-              <li>Give generously (4 pt): You will have the option of trading with villagers where the villager can take your items for free (?)
+            <li>Protect the people (1 pt): Become a Hero of the Village
+              <li>Protect the helpless (5 pt): Kill a creature that is targetting a passive mob or villager and is not in a Raid
+              <li>(?) Give generously (4 pt): You will have the option of trading with villagers where the villager can take your side of the trade for free; doing this increases favor (?)
                 <li>
   <li>
 </ul>
-            
+            <h4>Enemies</h4>
+Enemies are the mobs that this deity's power wards against (i.e. they take damage on the deity's holy land and sacred magic does much more damage to them). A maximum of 5 points can be expended. Each enemy species is worth 1 points and can be all non-boss hostile or neutral mobs. "Nonbelievers" can be chosen as one group but are worth 2 points.
+            <h4>Relationship Trait</h4>
+This is a concept that only makes sense on a multiplayer server, and determines how the god gets along with other gods. WARLIKE causes the god to frequently incite holy war missions to kill unbelievers. INVASIVE causes the god to incite peaceful missions to convert unbelievers. PEACEFUL causes the god's missions to be able to be done without interaction with other gods. FRIENDLY causes the god to attempt to ally with other gods to create a (?)Syncretism(?).
