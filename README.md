@@ -49,7 +49,7 @@ A minimum of 4 worship condition points must be expended. Worship conditions are
         <li>Worship in a library (1): Worship must occur with at least 4 bookshelves less than seven blocks away.
           <li>Worship in <non-Overworld dimension> (3): Worship must occur in the given dimension (might cancel out #1 or #2)
 </ul>
-<h4>Worship Modifiers</h4)
+            <h4>Worship Modifiers</h4>
   Worship modifiers are conditions that increase the amount of worship points gotten from a worship. A maximum of 4 points can be expended, a minimum of zero, with more difficult-to-achieve conditions being worth less points.
   <ul>
   <li>Nature (3 pt): each nearby plant block (log, leaf, sapling, flower, flowerpot, etc) adds some percent of additional worship (maximum radius is twenty)
