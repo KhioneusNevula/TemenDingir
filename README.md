@@ -80,7 +80,12 @@ Mandates are actions that can be taken to increase a deity's favor. (Be wary tha
 Enemies are the mobs that this deity's power wards against (i.e. they take damage on the deity's holy land and sacred magic does much more damage to them). A maximum of 5 points can be expended. Each enemy species is worth 1 points and can be all non-boss hostile or neutral mobs. "Nonbelievers" can be chosen as one group but are worth 2 points.
             <h4>Relationship Trait</h4>
 This is a concept that only makes sense on a multiplayer server, and determines how the god gets along with other gods. WARLIKE causes the god to frequently incite holy war missions to kill unbelievers. INVASIVE causes the god to incite peaceful missions to convert unbelievers. PEACEFUL causes the god's missions to be able to be done without interaction with other gods, and this is the default. FRIENDLY causes the god to attempt to ally with other gods to create a (?)Syncretism(?).
-            <br>
+            <h4>Blessings</h4>
+            Blessings are passive effects that have a chance of being applied to a worshiper to help them. This 'help' is usually not combative; it is based on defending, protecting, and restoring a worshiper and their possessions. Blessings' chance of working is dependent on a worshiper's favor with their deity. Blessing points have a max of 7 and a min of 0.
+            <ul>
+              <li>
+            </ul>
+            
             Upon finishing the specification of the god, the Create button must be pressed, after which the altar will be struck with a lightning blast. Once this is complete, the altar, if right clicked by anyone, will show a gui which shows a single slot with an arrow to another slot; if a book or book-quill is placed in the left slot a written book--a "holy book"--will appear in the right slot. This is a dynamic book which changes depending on the god's current tendencies and state. It will list all the information used in Specification. For the High Priest, the altar of Creation will have two buttons when right clicked: 'Specifications' and 'Holy Book'. The holy book button will go to the holy book gui, and the specifications button will go to the specification editing menu. When a specification is edited, the "Change" button can be pressed, and a message will be sent to all believers that the god now has that specification.
 <br>==========================================================================================================<br>
             After you've specified the god's tendencies, you should get to worshiping! Remember, don't break the tenets, and try to get favor with your deity.
