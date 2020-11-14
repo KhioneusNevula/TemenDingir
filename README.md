@@ -16,6 +16,9 @@ These are he/him, she/her, or they/them, and determine the god's form of address
 <h4>Tenets</h4>
 Tenets follow a system known as "tenet points." Tenets are rules that the faithful follow; to break one is to lose some favor with the god, and for a priest to break one is to lose priesthood. Each tenet is worth a certain amount of points; a minimum of seven tenet points need to be expended, but some tenets are worth more than others since they are more difficult to uphold.
 <ul>
-  <li>No killing passive or neutral mobs (2 pt): Self explanatory, the faithful cannot kill a passive mob directly.
-    <li>No killing hostile mobs (4 pt): Self explanatory, the faithful cannot kill hostile mobs directly
-      <li>No potioncraft (1 pt): The faithful cannot make or
+  <li>No killing passive or neutral mobs (2 pt): Killing a passive mob (directly) loses favor
+    <li>No killing hostile mobs (4 pt): Killing a hostile mob (directly) loses favor.
+      <li>No potioncraft (1 pt): Drinking a potion (willingly) loses favor; being hit by one does not.
+        <li>No enchanting (3 pt): Clicking with an enchanted tool or equipping enchanted armor loses favor; for armor, only the initial equip loses favor.
+          <li>No cursing (1 pt): Applying a curse to an item loses favor
+            <li>
