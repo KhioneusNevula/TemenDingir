@@ -29,7 +29,7 @@ Commandments are prohibitions in a religion. They follow a system known as "comm
                   <li>No false idols (1 pt): Construction of an iron or snow golem will cause a loss in favor.
                     <li>No sleep (1 pt): Sleeping in a bed for more than a 30 seconds or skipping the night will cause a loss in favor.
                     </ul>
-<h4>Worship Methods</h1>
+<h4>Worship Methods</h4>
 Similar to commandments, worship system has something called "worship points." Worship is the actions taken at an altar that empower one's god to raise its level and powers; there can only be a maximum of 7 worship points expended (leveling can increase that) with a minimum of 1 and more difficult actions are worth less worship points (to facilitate the variety in worshiping methods) but also give more power to the god. Worship is performed through some entity or item being put in a sacred fire or being killed with a Sacred Fire weapon. 
 <ul>
   <li>Human sacrifice (1 pt): Sacrifice a villager to the sacred fire, with a higher level and stock being worth more.
