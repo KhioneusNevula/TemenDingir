@@ -9,9 +9,11 @@ To create a god, one must construct an altar of sorts. This altar is four wood s
 After that, three items must be tossed in--these items will represent the "trinity" that invokes the deity. Note that NBT data will be ignored, i.e. a banner tossed in will prime the Invocation to sense ALL banners, not just banners with the given pattern. Once the three items are tossed in (two items can be identical; order doesn't matter; the items will be consumed) the primordial water will vanish.<br>
 After this, a Rudimentary god will be born. A Rudimentary is an embryonic god who is not fully born until it is Defined. To Define a god, a new altar must be built, one which is composed of three stone blocks side by side with one raised, and each one having an item frame on one side with an invoker item. The middle block with nothing in it should have a torch on the same side as the item frames. Once this is complete, right click any block in the altar to bring up a specification GUI.
 <br>
-<h3>Pronouns</h3>
+<h3>Specification GUI</h3>
+The rudimentary god's altar will bring up a gui to specify its religion.
+<h4>Pronouns</h4>
 These are he/him, she/her, or they/them, and determine the god's form of address
-<h3>Tenets</h3>
+<h4>Tenets</h4>
 Tenets follow a system known as "tenet points." Tenets are rules that the faithful follow; to break one is to lose some favor with the god, and for a priest to break one is to lose priesthood. Each tenet is worth a certain amount of points; a minimum of seven tenet points need to be expended, but some tenets are worth more than others since they are more difficult to uphold.
 <ul>
   <li>No killing passive or neutral mobs (2 pt): Self explanatory, the faithful cannot kill a passive mob directly.
