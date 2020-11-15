@@ -1,7 +1,7 @@
 <h1>TEMEN-DINGIR</h1>
 Sumerian: "Foundations of the Gods"
 <br>
-Mod which adds a religion faction system alongside magic powers from the gods
+Mod which adds a religion faction system alongside magic powers and automation from the gods
 <br>
 <h2>Gods</h2>
 Gods are sentient constructs created through an act of worship. Any person can create one at any time or pledge themself to a god; a player can only have one god. The creator of a god is automatically its High Priest.<br>
