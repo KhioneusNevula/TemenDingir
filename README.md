@@ -12,7 +12,7 @@ After this, a Rudimentary god will be born. A Rudimentary is an embryonic god wh
 <h3>Specification GUI</h3>
 The rudimentary god's altar will bring up a gui to specify its religion.
 <h4>Pronouns</h4>
-These are he/him, she/her, or they/them, and determine the god's form of address
+These are he/him, she/her, it, or they/them, and determine the god's form of address (Lord, Lady, Entity, Liege)
 <h4>Commandments</h4>
 Commandments are prohibitions in a religion. They follow a system known as "commandment points." Commandments are rules that the faithful follow; to break one is to lose some favor with the god, and for a priest to break one is to lose priesthood. Each commandment is worth a certain amount of points; a minimum of seven commandment points need to be expended, but some commandments are worth more than others since they are more difficult to uphold but also lose less favor if they are broken. A High Priest can add as many commandments to their god as they want; leveling up the god lowers the minimum commandment amount.
 <ul>
