@@ -77,7 +77,30 @@ Mandates are actions that can be taken to increase a deity's favor. (Be wary tha
   <li>
 </ul>
             <h4>Enemies</h4>
-Enemies are the mobs that this deity's power wards against (i.e. they take damage on the deity's holy land and sacred magic does much more damage to them). A maximum of 5 points can be expended. Each enemy species is worth 1 points and can be all non-boss hostile or neutral mobs. "Nonbelievers" can be chosen as one group but are worth 2 points.
+Enemies are the mobs that this deity's power wards against (i.e. they take damage on the deity's holy land and sacred magic does much more damage to them). A maximum of 5 points can be expended. Each enemy species is worth 1 points and can be all non-boss hostile or neutral mobs. "Atheists" (people who don't follow a god) can be chosen as one group but are worth 2 points. 
+            <h4>Consecration Permissions</h4>
+            Consecration permissions are the question of what a nonbeliever can do on the holy lands of the god. Any number can be chosen. These only apply in survival mode.
+            <ul>
+              <li>No Griefing - Nonbelievers cannot mine or place
+                <li>Adventure - Nonbelievers cannot mine or place unless they use a tool (overrides No Griefing)
+                  <li>No Hurting - Nonbelievers cannot hurt any entity directly on holy land
+                    <li>No Sleeping - Nonbelievers cannot set spawn point or sleep on holy land
+                      <li>No Opening - Nonbelievers cannot open inventories
+                        <li>No Touching - Nonbelievers cannot use anything
+                          <li>No interacting - Nonbelievers cannot trade with villagers, ride horses, tame pets, etc
+                            <li>No Entry - Nonbelievers are completely knocked away from the borders of consecrated ground
+                              <li>No Entry (Harm) - Nonbelievers take magical damage while walking on consecrated ground
+            </ul>
+            <h4>Consecration Protections</h4>
+            Protections that a believer on consecrated land enjoys; up to 7 points can be used.
+            <ul>
+              <li>No Harm (5 pt) - Believers cannot be harmed on consecrated ground
+                <li>Healing (2 pt) - Believers get healed on consecrated ground
+                  <li>No Hunger (1 pt) - Believers do not lose hunger on consecrated ground
+                    <li>No Drowning (1 pt) - Believers can breathe underwater indefinitely on consecrated ground.
+                      <li>Discounted Trade (3 pt) - Villager trades are always discounted in the same way as Hero of the Village if the villager and believer are standing on consecrated ground.
+                        <li>
+            </ul>
             <h4>Relationship Trait</h4>
 This is a concept that only makes sense on a multiplayer server, and determines how the god gets along with other gods. WARLIKE causes the god to frequently incite holy war missions to kill unbelievers. INVASIVE causes the god to incite peaceful missions to convert unbelievers. PEACEFUL causes the god's missions to be able to be done without interaction with other gods, and this is the default. FRIENDLY causes the god to attempt to ally with other gods to create a (?)Syncretism(?).
             <h4>Blessings</h4>
