@@ -1,0 +1,64 @@
+{
+  "effects": {
+    "mood_sound": {
+      "sound": "minecraft:music.end",
+      "tick_delay": 6000,
+      "block_search_extent": 8,
+      "offset": 2
+    },
+    "sky_color": 16449459,
+    "fog_color": 16775372,
+    "water_color": 1637345,
+    "water_fog_color": 1768447,
+    "foliage_color": 65471,
+    "grass_color": 65437,
+    "particle": {
+      "options": {
+        "type": "minecraft:enchant"
+      },
+      "probability": 0.015
+    },
+    "ambient_sound": "minecraft:block.bell.resonate"
+  },
+  "carvers": {
+    "air": [
+      "minecraft:canyon",
+      "minecraft:cave",
+      "minecraft:nether_cave"
+    ],
+    "liquid": [
+      "minecraft:canyon"
+    ]
+  },
+  "starts": [],
+  "features": [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    []
+  ],
+  "spawners": {
+    "ambient": [],
+    "creature": [],
+    "misc": [],
+    "monster": [],
+    "water_ambient": [],
+    "water_creature": []
+  },
+  "category": "none",
+  "precipitation": "none",
+  "surface_builder": "temendingir:empty",
+  "scale": 0.05,
+  "downfall": 0.4,
+  "depth": 0.12,
+  "temperature": 0.8,
+  "player_spawn_friendly": true,
+  "spawn_costs": {},
+  "creature_spawn_probability": 0
+}
