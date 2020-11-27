@@ -124,7 +124,91 @@ This is a concept that only makes sense on a multiplayer server, and determines 
                                         <li>Fortune: The next crop or ore the worshiper mines, or the next mob the worshiper kills, will drop extra.
             </ul>
             
- <br>           Upon finishing the specification of the god, the Create button must be pressed, after which the altar will be struck with a lightning blast. Once this is complete, the altar, if right clicked by anyone, will show a gui which shows a single slot with an arrow to another slot; if a book or book-quill is placed in the left slot a written book--a "holy book"--will appear in the right slot. This is a dynamic book which changes depending on the god's current tendencies and state. It will list all the information used in Specification. For the High Priest, the altar of Creation will have two buttons when right clicked: 'Specifications' and 'Holy Book'. The holy book button will go to the holy book gui, and the specifications button will go to the specification editing menu. When a specification is edited, the "Change" button can be pressed, and a message will be sent to all believers that the god now has that specification.
+ <br>           Upon finishing the specification of the god, the Create button must be pressed, after which the altar will be struck with a lightning blast. Once this is complete, the altar, if right clicked by anyone, will show a gui which shows a single slot with an arrow to another slot; if a book or book-quill is placed in the left slot a written book--a "holy book"--will appear in the right slot. This is a dynamic book which changes depending on the god's current tendencies and state. It will list all the information used in Specification. For the High Priest, the altar of Creation will have two buttons when right clicked: 'Specifications' and 'Holy Book'. The holy book button will go to the holy book gui, and the specifications button will go to the specification editing menu. When a specification is edited, the "Change" button can be pressed, and a message will be sent to all believers that the god now has that specification. (redo this later)<br>
+ Program info:
+ <br>
+		  Information:<br>
+		  all "portal" data blocks face south; blportal is the bottom left portal<br>
+		  pronountt, pronounss, pronounii, pronounhh -- wall signs, with all facing
+		  north, determining deity pronouns<br>
+		  signcom = south facing sign giving commandment info this<br>
+		  Commandments [com] (south facing wall signs)<br>
+		  <ul>
+		  <li>comnokillpn -> no killing passive or neutral mobs
+		  <li>comnokillh -> no kill hostile mobs
+		  <li>comloveoa -> love one another
+		  <li>comloveyn -> love neighbor
+		  <li>comnopotion -> no potioncraft
+		  <li>comnoench -> no enchanting
+		  <li>comnocurse -> no cursing
+		  <li>comnochestgear -> no wearing chest gear
+		  <li>comnomeat -> no eating meat
+		  <li>comnocrops -> no eatn crops
+		  <li>comnofalseidols -> no false idols
+		  <li>comnosleep -> no sleep
+		  </ul>
+		  signwormet = east facing wall sign, worship info <br>
+		  Worship methods [wormet] (east facing wall signs)<br>
+		  <ul>
+		  <li>wormethuman ->Human Sacrifice
+		  <li>wormethostile -> Hostile Mob Sacrifice
+		  <li>wormetpassive -> Passive Mob Sacrifice
+		  <li>wormettool -> Tool Sacrifice
+		  <li>wormetfood -> Food Sacrifice
+		  <li>wormetplant -> Plant Sacrifice
+		  <li>wormetwealth -> Wealth Sacrifice
+		  </ul>
+		  signworcon = east facing wall sign, worship condition info <br>
+		  Worship Conditions [worcon] (east facing wall signs)<br>
+		  <ul>
+		  <li>worconday = worship in day
+		  <li>worconnight = worship at night
+		  <li>worconbuilding = worship in building
+		  <li>worconlibrary = worship in library
+		  <li>worconnether = worship in nether
+		  <li>worcontwilight = worship in twilight forest; TF compat
+		  </ul>
+		  signwormod = east facing wall sign, worship modifier info <br>
+		  Worship Modifiers [wormod] (east facing wall signs)<br>
+		  <ul>
+		  <li>wormodnature = nature
+		  <li>wormodlibrary = library
+		  <li>wormodflame = flame
+		  <li>wormodwater = water
+		  <li>wormodart = art
+		  <li>wormoddecoration = decoration
+		  </ul>
+		 signconper = north facing wall sign, consecration permission info <br>
+		  Consecration Permissions [conper] (north wall signs)<br>
+		  <ul>
+		  <li>conpernogriefing = no griefing
+		  <li>conperadventure = adventure mode
+		  <li>conpernohurting = no hurting
+		  <li>conpernosleeping = no sleeping
+		  <li>conpernoopening = no opening
+		  <li>conpernotouching = no touching
+		  <li>conpernointeracting = no interacting
+		  <li>conpernoentry = no entry
+		  <li>conperharmentry = no entry (harm)
+		  </ul>
+		  signconpro = north facing wall sign, consecration protection info <br>
+		  Consecration Protections [conpro] (north wall signs)<br>
+		  <ul>
+		  <li>conpronoharm = no harm
+		  <li>conprohealing = healing
+		  <li>conpronohunger = no hunger
+		  <li>conpronodrowning = no drowning
+		  <li>conprodiscount = discounted trade
+		 </ul>
+		  signrel = south facing wall sign, relationship info <br>
+		  Relationship Types [rel] (south wall signs)<br>
+		  <ul>
+		  <li>relwarlike = warlike
+		  <li>relinvasive = invasive
+		  <li>relpeaceful = peaceful
+		  </ul>
+		 
+     <br>
 <br>==========================================================================================================<br>
             After you've specified the god's tendencies, you should get to worshiping! Remember, don't break the tenets, and try to get favor with your deity.
             <h3>Worship</h3>
