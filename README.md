@@ -94,7 +94,7 @@ Enemies are the mobs that this deity's power wards against (i.e. they take damag
             <h4>Consecration Protections</h4>
             Protections that a believer on consecrated land enjoys; up to 7 points can be used.
             <ul>
-              <li>No Harm (5 pt) - Believers cannot be harmed on consecrated ground
+              <li>No Harm (5 pt) - Believers cannot be attacked directly on consecrated ground
                 <li>Healing (2 pt) - Believers get healed on consecrated ground
                   <li>No Hunger (1 pt) - Believers do not lose hunger on consecrated ground
                     <li>No Drowning (1 pt) - Believers can breathe underwater indefinitely on consecrated ground.
