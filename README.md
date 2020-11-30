@@ -1,7 +1,7 @@
 <h1>TEMEN-DINGIR</h1>
 Sumerian: "Foundations of the Gods"
 <br>
-Mod which adds a religion faction system alongside magic powers and automation from the gods
+Mod which adds a religion faction system alongside magic powers and automation from the gods. There are two roles one can take to interact with this mod: believer and witch. However, gods are player-created (subject to change), so even a witch needs to be a believer temporarily.
 <br>
 <h2>Gods</h2>
 Gods are sentient constructs created through an act of worship. Any person can create one at any time or pledge themself to a god; a player can only have one god. The creator of a god is automatically its High Priest.<br>
@@ -123,7 +123,17 @@ This is a concept that only makes sense on a multiplayer server, and determines 
                                       <li>Divine Retaliation: If an entity attacks the worshiper it will be struck by lightning.
                                         <li>Fortune: The next crop or ore the worshiper mines, or the next mob the worshiper kills, will drop extra.
             </ul>
-            
+            <h4>Elements</h4>
+            Elements determine what the god's magic revolves around. A god's element determines, for example, whether the god can allow its believers to use water magic, death magic, etc. Up to 3 points can be expended, with more being allowed later on. Elements can be changed after being chosen unless they are used to create something.
+            <ul>
+              <li>Baraqu - Energy: The elements of fire/heat, lightning, redstone, and forge energy. Abilities would include creating fire and lava through heat changes, freezing water, changing temperatures, striking lightning, activating a redstone element, converting divine energy to other forms of energy, conjuring redstone materials, movement of blocks and entities, flight, etc.
+                <li>Kharsaanu - Nature: The elements of crops and plants and animals. Abilities would include causing plants to grow, produce more harvest, growing forests, conjuring plant materials, giving orders to (land) animals, healing animals, causing animals to breed, guaranteeing animal taming, keeping animals peaceful, draining or giving life, etc.
+                <li>Ki - Earth: The elements of stone, metal, and ores. Abilities would include magical ore harvests, conjuring earth materials, tools, and stone/metal structures, causing blocks to fall or stop them from falling, strengthening blocks, protection from fall damage.
+                  <li>Etutu - Night: The element of nighttime, undead, monsters. Abilities include some measure of control over the undead and monsters like endermen, night vision, phantom, bat, and parrot control, daylight cycle changes, applying the effects of sleep to the world, protection and cloaking from hostile mobs, creating and controlling respawn points in the overworld
+                      <li>Ersetu - Infernal: The element of the nether, potions, etc. Abilities include some measure of control over harvest from nether crops and ores, commanding and healing nether mobs, preventing or causing piglin transformations, potion ingredient conjuration, controlling what enchantments are applied, potion renewability, protection from lava, creating and controlling respawn points in the nether. Dimensional travel, however, is not included.
+                        <li>Mu - Water: The element of water, ocean, etc. Abilities include some measure of water protection, weather manipulation, water creation, ice creation, water walking, conduit-power-type swimming, giving orders to or protecting against guardians, squid, fish, and drowneds
+				<li>Nibiru - Otherworld: The elements of afterworld, transportation, and spatial distortion; this is the only element worth 2 points. Abilities include the creation of a Kur (afterlife) using Kur Doors, the usage of this Kur for teleportation, protection, or trapping, keep-inventory, spectral mode of travel, dimensional travel, spatial and item storage and transport. 
+            </ul>
  <br>           Upon finishing the specification of the god, the Create button must be pressed, after which the altar will be struck with a lightning blast. Once this is complete, the altar, if right clicked by anyone, will show a gui which shows a single slot with an arrow to another slot; if a book or book-quill is placed in the left slot a written book--a "holy book"--will appear in the right slot. This is a dynamic book which changes depending on the god's current tendencies and state. It will list all the information used in Specification. For the High Priest, the altar of Creation will have two buttons when right clicked: 'Specifications' and 'Holy Book'. The holy book button will go to the holy book gui, and the specifications button will go to the specification editing menu. When a specification is edited, the "Change" button can be pressed, and a message will be sent to all believers that the god now has that specification. (redo this later)<br>
  Program info:
  <br>
@@ -223,4 +233,3 @@ This is a concept that only makes sense on a multiplayer server, and determines 
             An energy wire is a slab which connects to an Energy Altar. Energy only travels along slabs and only changes level using stairs, and all the slabs/stairs used must be the same type.
             <h4>Consecrator</h4>
             A consecrator is a structure made using four outward-facing stairs at the bottom to obtain energy and an upward log block in the center with a dirt block that has a sapling on it. Four item frames must be on the dirt block's sides with the Quadrinity, and once the sapling is placed it will turn into a sacred tree if it has enough space. (If not, oh well). Then, the structure will be known as a consecrator and a cylinder going up and down 16 blocks in a 16 block radius around will be "consecrated." Consecrated land magnifies worship power and also has negative effects on mobs that are Enemies to the god. Worshipers are also notified when non-worshipers enter consecrated land, as are the enterers themselves.
-            Consecrators also contain a single slot inventory, and anything put in that inventory becomes "blessed" if there is enough divine energy in the inventory to do so. A blessed weapon works just like
