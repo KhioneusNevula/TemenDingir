@@ -237,3 +237,8 @@ This is a concept that only makes sense on a multiplayer server, and determines 
             A consecrator is a structure made using a structure of stone; when a stone wall is placed in the middle it becomes a consecrator and will only apply its effects when receiving a redstone signal. To make this structure work, two "pylons" must be placed at opposite ends of a rectangle (their y positions do not matter and will not affect the height of their consecrated region, which is always 20 blocks in both directions based on the consecrator's own position) to designate that rectangle as consecrated. A consecrator's power usage increases with the area of the rectangle, but, in fact, is a constant amount less (i.e. one block or something like that) than the actual area, so more consecrators means less power usage since each consecrator will detract one block from the power usage instead of one consecrator only detracting one block for a huge region. Since consecrators only make rectangles, this means complex regions require multiple consecrators. Additionally, a consecration pylon is indestructible (to non-believers (?) / while the consecration altar is powered (?)).
 	    <h4>Quests</h4>
 	    A Quest is an event which must be completed to level up a deity; a deity starts at level 1. Each new level, the deity gains abilities, maxing out at {something}. At level 1, the powers listed above will exist, but no others. (except elements; elements lack significance until level 2)
+
+
+
+<br>...Aqrabuamelu - scorpion people, warriors<br>
+Igigi - lesser deities, utility deities<br>
