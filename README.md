@@ -16,7 +16,7 @@ These are he/him, she/her, it, or they/them, and determine the god's form of add
 <h4>Commandments</h4>
 Commandments are prohibitions in a religion. They follow a system known as "commandment points." Commandments are rules that the faithful follow; to break one is to lose some favor with the god, and for a priest to break one is to lose priesthood. Each commandment is worth a certain amount of points; a minimum of seven commandment points need to be expended, but some commandments are worth more than others since they are more difficult to uphold but also lose less favor if they are broken. A High Priest can add as many commandments to their god as they want; leveling up the god lowers the minimum commandment amount.
 <ul>
-  <li>No killing passive or neutral mobs (2 pt): Killing a passive mob (directly) loses favor.
+  <li>No killing peaceful mobs (2 pt): Killing a peaceful mob (directly) loses favor.
     <li>No killing hostile mobs (4 pt): Killing a hostile mob (directly) loses favor.
       <li>Love one another (2 pt): Killing a player of any sort loses favor.
       <li>Love your neighbor (1 pt): Killing another of the same religion loses favor.
@@ -144,7 +144,7 @@ This is a concept that only makes sense on a multiplayer server, and determines 
 		  signcom = south facing sign giving commandment info this<br>
 		  Commandments [com] (south facing wall signs)<br>
 		  <ul>
-		  <li>comnokillpn -> no killing passive or neutral mobs
+		  <li>comnokillpn -> no killing peaceful mobs
 		  <li>comnokillh -> no kill hostile mobs
 		  <li>comloveoa -> love one another
 		  <li>comloveyn -> love neighbor
@@ -239,6 +239,12 @@ This is a concept that only makes sense on a multiplayer server, and determines 
 	    A Quest is an event which must be completed to level up a deity; a deity starts at level 1. Each new level, the deity gains abilities, maxing out at {something}. At level 1, the powers listed above will exist, but no others. (except elements; elements lack significance until level 2)
 
 
-
+<h4>Lesser Divinities</h4>
 <br>...Aqrabuamelu - scorpion people, warriors<br>
 Igigi - lesser deities, utility deities<br>
+
+<h4>Apocalypses</h4>
+When a god has a Monopoly on an element, the high priest of the god can trigger an Apocalypse. To make one, the high priest must collect three of each of the Nether Star, a Dragon Egg (will be renewable), Elder Eye (eye of the elder guardian), Totem of Undying. These must all be crafted into the Eye of Tiamat, at which point one altar to the Dragon herself must be made with this Eye in each dimension (Nether, End, Overworld). The three must all be linked to each other with a gidru; Overworld to nether, nether to end, end to overworld. Then, each altar must be activated with redstone and all priests must kill themselves in the fire atop it. A Warrior, 
+
+<h4>Temperature</h4>
+The temperature system is a way to essentially transform the mechanics of regular Minecraft such that blocks each have a temperature value (stored in Celsius) that can propagate through nearby blocks to heat up an area although different materials will propagate and deny different amounts of heat, meaning an enclosed chamber will become fully heated up by a fireplace in it since air propagates heat quickly but stone doesn't. This is important in the case of the Energy Apocalypse, which causes the surface temperature to be either very hot or very cold. Temperature affects block properties. A water block with temperature of 0 or less will freeze. A water block of temperature 100 will turn into air. A stone block with temperature 700 will become lava. A wood block of temperature 300 will catch fire. A plant which is too hot or on a block too hot will die; same for cold. Certain blocks are also heat sources; fire blocks are heat sources, torches and furnaces provide a small amount of heat while campfires provide a lot, although soul campfires are cold. Nether portals are hot; end portals are cold. Mobs also have effects in heat; mobs tend to die in high heat and gain slowness in very low heat before dying. Blazes cannot survive in cold and produce small amounts of heat themselves. Players can view their own temperature and ensure it is in a safe range. This system is most likely only going to mean anything once the Energy Apocalypse is triggered.
