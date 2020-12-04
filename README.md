@@ -21,7 +21,7 @@ Commandments are prohibitions in a religion. They follow a system known as "comm
       <li>Love one another (2 pt): Killing a player of any sort loses favor.
       <li>Love your neighbor (1 pt): Killing another of the same religion loses favor.
       <li>No potioncraft (1 pt): Drinking a potion (willingly) loses favor; being hit by one does not.
-        <li>No enchanting (3 pt): Clicking with an enchanted tool or equipping enchanted armor loses favor; for armor, only the initial equip loses favor. 
+        <li>No enchanting (3 pt): Clicking with an enchanted tool or equipping enchanted armor loses favor; for armor, only the initial equip loses favor, alongside every time you wake up with that armor on, as well as every time you are attacked while wearing it. 
           <li>No cursing (1 pt): Applying a curse to an item loses favor
             <li>No wearing chestgear (5 pt): Equipping a chestgear item causes a loss in favor
               <li>No eating meat (2 pt): Eating a meat consumable that is NOT fish causes a loss in favor.
