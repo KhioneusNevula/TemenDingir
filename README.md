@@ -242,6 +242,9 @@ This is a concept that only makes sense on a multiplayer server, and determines 
 <h4>Lesser Divinities</h4>
 <br>...Aqrabuamelu - scorpion people, warriors<br>
 Igigi - lesser deities, utility deities<br>
+Ala - Ala are the demonic deities who cause problems for the faithful. An Alu manifests in the form popularly known as "Herobrine," although they may also take the forms of potatoes, the reason for which is unknown. In either form, they are scary and dangerous. Ala are invisible and intangible and follow players. They can only be killed in the last stage of haunting, or if the attacker has spectral sight.<br>
+Galla - A more powerful demon of punishment, the gallu, manifests when the sacrilege to a god has reached a critically low level, such as when a worshiper has committed so many offenses to the god that they couldn't possibly do more (favor = 0). <br>
+Pazuzu - The executioner of the divine, Pazuzu manifests when over half of all worshipers have been committing sins.
 
 <h4>Apocalypses</h4>
 When a god has a Monopoly on an element, the high priest of the god can trigger an Apocalypse. To make one, the high priest must collect three of each of the Nether Star, a Dragon Egg (will be renewable), Elder Eye (eye of the elder guardian), Totem of Undying. These must all be crafted into the Eye of Tiamat, at which point one altar to the Dragon herself must be made with this Eye in each dimension (Nether, End, Overworld). The three must all be linked to each other with a gidru; Overworld to nether, nether to end, end to overworld. Then, each altar must be activated with redstone and all priests must kill themselves in the fire atop it. A Warrior, 
