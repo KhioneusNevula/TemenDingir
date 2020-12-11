@@ -5,7 +5,9 @@ import com.gm910.temendingir.api.networking.messages.Networking.TaskMessage;
 import com.gm910.temendingir.capabilities.GMCaps;
 import com.gm910.temendingir.init.BlockInit;
 import com.gm910.temendingir.init.EffectInit;
+import com.gm910.temendingir.init.EntityInit;
 import com.gm910.temendingir.init.ItemInit;
+import com.gm910.temendingir.init.StructureInit;
 import com.gm910.temendingir.init.TileInit;
 import com.gm910.temendingir.keys.ModKeys;
 
@@ -56,6 +58,8 @@ public class TemenDingir {
 		TileInit.TILE_TYPES.register(modBus);
 		EffectInit.EFFECTS.register(modBus);
 		EffectInit.POTION_TYPES.register(modBus);
+		StructureInit.STRUCTURES.register(modBus);
+		EntityInit.ENTITY_TYPES.register(modBus);
 
 		ModChannels.INSTANCE.registerMessage(ModChannels.id++, TaskMessage.class, TaskMessage::encode,
 				TaskMessage::fromBuffer, TaskMessage::handle);
@@ -72,6 +76,7 @@ public class TemenDingir {
 		ModKeys.clientinit();
 		ItemInit.registerISTERs();
 		TileInit.registerTESRs();
+		EntityInit.registerRenderers();
 	}
 
 	private void enqueueIMC(

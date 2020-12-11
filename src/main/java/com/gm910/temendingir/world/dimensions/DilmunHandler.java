@@ -14,9 +14,12 @@ import com.google.common.collect.Lists;
 
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.ResourceLocationException;
+import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.gen.feature.template.PlacementSettings;
+import net.minecraft.util.math.MutableBoundingBox;
+import net.minecraft.world.gen.feature.structure.StructureManager;
+import net.minecraft.world.gen.feature.structure.StructurePiece;
 import net.minecraft.world.gen.feature.template.Template;
 import net.minecraft.world.gen.feature.template.TemplateManager;
 import net.minecraft.world.server.ServerWorld;
@@ -35,19 +38,24 @@ public class DilmunHandler {
 		if (event.getTo().equals(DimensionInit.DILMUN)) {
 			DeityData data = DeityData.get(event.getPlayer().getServer());
 			Deity deity = data.getFromFollowerUUID(event.getPlayer().getUniqueID());
-			if (deity == null)
-				return;
-			if (!deity.getTravelingPlayers().contains(event.getPlayer().getUniqueID())) {
+			if (deity == null) {
+				System.out.println("Godless heathen traveling to dilmun");
 				return;
 			}
-			if (deity.getDilmunChunk() != null)
-				return;
-			ChunkPos toClaim = claimNewDilmunChunk(deity);
-			deity.setDilmunChunk(toClaim);
-			buildDilmunStructure(toClaim, deity);
-			if (event.getPlayer().getTags().contains("traveler")) {
-				event.getPlayer().setPosition(toClaim.getXStart() + 8, 100, toClaim.getZStart() + 8);
-				event.getPlayer().removeTag("traveler");
+			if (deity.getDilmunChunk() == null) {
+				System.out.println("Claiming a dilmunic chunk for deity " + deity);
+				ChunkPos toClaim = claimNewDilmunChunk(deity);
+
+				deity.setDilmunChunk(toClaim);
+				System.out.println("Constructing a dilmunic structure for deity " + deity);
+				buildDilmunStructure(toClaim, deity);
+			}
+			ChunkPos dchunk = deity.getDilmunChunk();
+			if (deity.getExtraEntityInfo(event.getPlayer().getUniqueID()).contains("PositionBeforeDilmun")) {
+				System.out.println("Sending player " + event.getPlayer().getDisplayName().getString()
+						+ " to dilmunic chunk for deity " + deity + " at " + dchunk);
+				BlockPos positionTo = deity.getSettings().getExitPortal();
+				event.getPlayer().setPosition(positionTo.getX(), positionTo.getY(), positionTo.getZ());
 			}
 		}
 	}
@@ -62,6 +70,7 @@ public class DilmunHandler {
 			}
 		}).collect(Collectors.toSet());
 		if (claimeds.isEmpty()) {
+			System.out.println("Found " + new ChunkPos(0, 0) + " for " + deity);
 			return new ChunkPos(0, 0);
 		}
 		Set<ChunkPos> candidates = new HashSet<>();
@@ -86,30 +95,80 @@ public class DilmunHandler {
 			return (int) (c1.asBlockPos().distanceSq(new BlockPos(0, 0, 0))
 					- c2.asBlockPos().distanceSq(new BlockPos(0, 0, 0)));
 		});
+		System.out.println("Found " + candidatesSorted.get(0) + " for " + deity);
 		return candidatesSorted.get(0);
 	}
 
 	private static void buildDilmunStructure(ChunkPos pos, Deity d) {
-
+		ServerWorld dilmun = d.getData().getServer().getWorld(DimensionInit.DILMUN);
+		for (int x = pos.x - 1; x <= 1; x++) {
+			for (int z = pos.z - 1; z <= 1; z++) {
+				dilmun.forceChunk(x, z, false);
+			}
+		}
+		boolean suc = loadStructure(DILMUN_DESIGNER_RL, dilmun, pos.asBlockPos(), d);
+		System.out.println((suc ? "Loaded " : "Failed to load ") + "dilmunic structure for " + d + " at " + pos);
 	}
 
-	public boolean loadStructure(ResourceLocation name, ServerWorld world, BlockPos blockpos) {
+	public static boolean loadStructure(ResourceLocation name, ServerWorld world, BlockPos blockpos, Deity deity) {
+		DilmunStructureConfig config = new DilmunStructureConfig(deity.getUuid().toString());
+		StructureManager manager = world.func_241112_a_();
 
-		TemplateManager manager = world.getStructureTemplateManager();
-
+		TemplateManager tempman = world.getStructureTemplateManager();
 		Template template;
 		try {
-			template = manager.getTemplate(name);
+			template = tempman.getTemplate(name);
 		} catch (ResourceLocationException resourcelocationexception) {
 			return false;
 		}
-
-		PlacementSettings placementsettings = (new PlacementSettings()).setIgnoreEntities(true)
-				.setChunk(new ChunkPos(blockpos));
-
-		BlockPos blockpos2 = blockpos;
-		template.func_237144_a_(world, blockpos2, placementsettings, world.rand);
-		return true;
+		BlockPos size = template.getSize();
+		MutableBoundingBox box = MutableBoundingBox.createProper(blockpos.getX(), blockpos.getY(), blockpos.getZ(),
+				blockpos.getX() + size.getX(), blockpos.getY() + size.getY(), blockpos.getZ() + size.getZ());
+		List<StructurePiece> templist = Lists.newArrayList();
+		DilmunStructurePiece.func_204760_a(tempman, blockpos, Rotation.NONE, templist, world.rand, config);
+		DilmunStructurePiece.Piece piece = (DilmunStructurePiece.Piece) templist.get(0);
+		return piece.func_230383_a_(world, manager, world.getChunkProvider().getChunkGenerator(), world.rand, box,
+				new ChunkPos(blockpos), blockpos);
+		/*
+		 * DilmunStructure.Start start = (Start)
+		 * StructureInit.DILMUN_DESIGNER_DEFAULT_STRUCTURE.getStartFactory().create(
+		 * StructureInit.DILMUN_DESIGNER_DEFAULT_STRUCTURE, blockpos.getX(),
+		 * blockpos.getZ(), box, 1, world.getSeed());
+		 * start.func_230364_a_(world.func_241828_r(),
+		 * world.getChunkProvider().getChunkGenerator(),
+		 * world.getStructureTemplateManager(), blockpos.getX(), blockpos.getX(),
+		 * world.getBiome(blockpos), config); start.func_230366_a_(world, manager,
+		 * world.getChunkProvider().getChunkGenerator(), world.rand, box, new
+		 * ChunkPos(blockpos)); boolean success = false; boolean first = true; for
+		 * (StructurePiece e : start.getComponents()) { e.buildComponent(e,
+		 * start.getComponents(), world.rand);
+		 * 
+		 * boolean res = e.func_230383_a_(world, manager,
+		 * world.getChunkProvider().generator, world.rand, box, new ChunkPos(blockpos),
+		 * blockpos); if (first) { success = res; first = false; } else { success =
+		 * success && res; } }
+		 * 
+		 * return success;
+		 */
+		/*
+		 * TemplateManager manager = world.getStructureTemplateManager(); Template
+		 * template; try { template = manager.getTemplate(name); } catch
+		 * (ResourceLocationException resourcelocationexception) { return false; }
+		 * 
+		 * BlockPos size = template.getSize(); PlacementSettings placementsettings =
+		 * (new PlacementSettings()).setIgnoreEntities(true) .setChunk(new
+		 * ChunkPos(blockpos))
+		 * .setBoundingBox(MutableBoundingBox.createProper(blockpos.getX(),
+		 * blockpos.getY(), blockpos.getZ(), blockpos.getX() + size.getX(),
+		 * blockpos.getY() + size.getY(), blockpos.getZ() + size.getZ()))
+		 * .func_215223_c(true).func_237133_d_(true);
+		 * 
+		 * 
+		 * 
+		 * 
+		 * BlockPos blockpos2 = blockpos; template.func_237144_a_(world, blockpos2,
+		 * placementsettings, world.rand);
+		 */
 
 	}
 

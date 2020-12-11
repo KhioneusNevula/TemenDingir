@@ -24,9 +24,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.GlobalPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3i;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.common.util.Constants.NBT;
 
 public class ServerPos extends BlockPos {
 
@@ -43,6 +43,13 @@ public class ServerPos extends BlockPos {
 
 	public ServerPos(Entity source) {
 		this(source.getPositionVec(), source.getEntityWorld().getDimensionKey().getLocation());
+	}
+
+	public ServerPos(Entity source, boolean lastTick) {
+		this(lastTick ? source.lastTickPosX : source.getPositionVec().x,
+				lastTick ? source.lastTickPosY : source.getPositionVec().y,
+				lastTick ? source.lastTickPosZ : source.getPositionVec().z,
+				source.getEntityWorld().getDimensionKey().getLocation());
 	}
 
 	public ServerPos(TileEntity source) {
@@ -78,6 +85,19 @@ public class ServerPos extends BlockPos {
 		this(source, d.getLocation());
 	}
 
+	public ServerPos(Vector3d vec, World d) {
+		this(vec, d.getDimensionKey());
+	}
+
+	public ServerPos(IPosition p_i50799_1_, World d) {
+		this(p_i50799_1_, d.getDimensionKey());
+
+	}
+
+	public ServerPos(Vector3i source, World d) {
+		this(source, d.getDimensionKey());
+	}
+
 	public ServerPos(int x, int y, int z, ResourceLocation d) {
 		super(x, y, z);
 		this.d = d;
@@ -96,8 +116,20 @@ public class ServerPos extends BlockPos {
 		this(x, y, z, d.getLocation());
 	}
 
+	public ServerPos(int x, int y, int z, World d) {
+		this(x, y, z, d.getDimensionKey());
+	}
+
+	public ServerPos(double x, double y, double z, World d) {
+		this(x, y, z, d.getDimensionKey());
+	}
+
 	public ResourceLocation getD() {
 		return d;
+	}
+
+	public RegistryKey<World> getDKey() {
+		return RegistryKey.getOrCreateKey(Registry.WORLD_KEY, d);
 	}
 
 	public ServerPos setDimension(ResourceLocation d) {
@@ -113,7 +145,7 @@ public class ServerPos extends BlockPos {
 	}
 
 	public BlockPos castToPos() {
-		return (BlockPos) this;
+		return this;
 	}
 
 	@Override
@@ -130,77 +162,94 @@ public class ServerPos extends BlockPos {
 		}
 	}
 
+	@Override
 	public ServerPos up(int n) {
 		return new ServerPos(super.up(n), d);
 	}
 
+	@Override
 	public ServerPos up() {
 		return up(1);
 	}
 
+	@Override
 	public ServerPos down(int n) {
 		return new ServerPos(super.down(n), d);
 	}
 
+	@Override
 	public ServerPos down() {
 		return down(1);
 	}
 
+	@Override
 	public ServerPos north(int n) {
 		return new ServerPos(super.north(n), d);
 	}
 
+	@Override
 	public ServerPos north() {
 		return new ServerPos(super.north(), d);
 	}
 
+	@Override
 	public ServerPos south(int n) {
 		return new ServerPos(super.south(n), d);
 	}
 
+	@Override
 	public ServerPos south() {
 		return new ServerPos(super.south(), d);
 	}
 
+	@Override
 	public ServerPos east(int n) {
 		return new ServerPos(super.east(n), d);
 	}
 
+	@Override
 	public ServerPos east() {
 		return new ServerPos(super.east(), d);
 	}
 
+	@Override
 	public ServerPos west(int n) {
 		return new ServerPos(super.west(n), d);
 	}
 
+	@Override
 	public ServerPos west() {
 		return new ServerPos(super.west(), d);
 	}
 
+	@Override
 	public ServerPos offset(Direction facing, int n) {
 		return new ServerPos(super.offset(facing, n), d);
 	}
 
+	@Override
 	public ServerPos offset(Direction facing) {
 		return new ServerPos(super.offset(facing), d);
 	}
 
+	@Override
 	public ServerPos add(double x, double y, double z) {
 		return new ServerPos(super.add(x, y, z), d);
 	}
 
+	@Override
 	public ServerPos add(int x, int y, int z) {
 		return new ServerPos(super.add(x, y, z), d);
 	}
 
+	@Override
 	public ServerPos add(Vector3i vec) {
 		return new ServerPos(super.add(vec), d);
 	}
 
 	@Override
 	public String getCoordinatesAsString() {
-		return super.getCoordinatesAsString() + ", " + d.toString();
+		return super.getCoordinatesAsString() + ", d=" + d.toString();
 	}
 
 	@Override
@@ -209,18 +258,20 @@ public class ServerPos extends BlockPos {
 				.add("d", this.getD()).toString();
 	}
 
+	@Override
 	public ServerPos toImmutable() {
 		return this;
 	}
 
+	@Override
 	public ServerPos subtract(Vector3i vec) {
 		return new ServerPos(super.subtract(vec), d);
 	}
 
+	@Override
 	public ServerPos rotate(Rotation rotationIn) {
 		return new ServerPos(super.rotate(rotationIn), d);
 	}
-
 
 	/**
 	 * Gets blockpos from nbt OR serverpos depending on whether the nbt is
@@ -231,8 +282,9 @@ public class ServerPos extends BlockPos {
 	 */
 	public static BlockPos bpFromNBT(CompoundNBT nbt) {
 
-		if (nbt.contains("D", NBT.TAG_INT)) {
-			return new ServerPos(nbt.getInt("X"), nbt.getInt("Y"), nbt.getInt("Z"), new ResourceLocation(nbt.getString("D")));
+		if (nbt.contains("D")) {
+			return new ServerPos(nbt.getInt("X"), nbt.getInt("Y"), nbt.getInt("Z"),
+					new ResourceLocation(nbt.getString("D")));
 		} else {
 			return new BlockPos(nbt.getInt("X"), nbt.getInt("Y"), nbt.getInt("Z"));
 		}
@@ -252,7 +304,7 @@ public class ServerPos extends BlockPos {
 	 * @param pos
 	 * @return
 	 */
-	public static CompoundNBT toNBT(BlockPos pos) {
+	public static CompoundNBT toNBT(Vector3i pos) {
 		CompoundNBT nbt = new CompoundNBT();
 		nbt.putInt("X", pos.getX());
 		nbt.putInt("Y", pos.getY());
@@ -267,7 +319,8 @@ public class ServerPos extends BlockPos {
 	}
 
 	public ServerWorld getWorld(MinecraftServer server) {
-		return server.forgeGetWorldMap().entrySet().stream().filter((e) ->e.getKey().getLocation().equals(d)).map((m) -> m.getValue()).findAny().orElse(null);
+		return server.forgeGetWorldMap().entrySet().stream().filter((e) -> e.getKey().getLocation().equals(d))
+				.map((m) -> m.getValue()).findAny().orElse(null);
 	}
 
 	public boolean isClientInWorld(Minecraft mc) {

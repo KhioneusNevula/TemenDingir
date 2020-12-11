@@ -74,6 +74,7 @@ public class BlockInfo implements INBTSerializable<CompoundNBT> {
 		world.setBlockState(pos, this.state);
 		TileEntity tile1 = world.getTileEntity(pos);
 		if (this.tile != null) {
+			tile.setWorldAndPos(world, pos);
 			world.setTileEntity(pos, this.tile);
 		}
 		return new BlockInfo(state1, tile1);

@@ -1,5 +1,6 @@
 package com.gm910.temendingir.api.util;
 
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,11 +20,11 @@ import net.minecraft.nbt.IntArrayNBT;
 import net.minecraft.nbt.IntNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.nbt.NBTDynamicOps;
-import net.minecraft.nbt.NBTUtil;
 import net.minecraft.nbt.NumberNBT;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.vector.Vector3i;
 import net.minecraft.world.server.ServerWorld;
 
 public class GMNBT {
@@ -36,7 +37,7 @@ public class GMNBT {
 		return ls;
 	}
 
-	public static ListNBT makePosList(Iterable<BlockPos> iter) {
+	public static ListNBT makePosList(Iterable<? extends Vector3i> iter) {
 		return makeList(iter, (s) -> (ServerPos.toNBT(s)));
 	}
 
@@ -142,8 +143,8 @@ public class GMNBT {
 		return lws;
 	}
 
-	public static List<BlockPos> createPosList(ListNBT ls) {
-		return createList(ls, (b) -> NBTUtil.readBlockPos((CompoundNBT) b));
+	public static <T extends Vector3i> List<T> createPosList(ListNBT ls) {
+		return createList(ls, (b) -> (T) ServerPos.fromNBT((CompoundNBT) b));
 	}
 
 	public static List<BlockPos> createServerPosList(ListNBT ls) {
@@ -186,6 +187,19 @@ public class GMNBT {
 
 	public static Dynamic<INBT> makeDynamic(INBT data) {
 		return new Dynamic<>(NBTDynamicOps.INSTANCE, data);
+	}
+
+	public static CompoundNBT rectangleToNBT(Rectangle rect) {
+		CompoundNBT nbt = new CompoundNBT();
+		nbt.putInt("X", (int) rect.getMinX());
+		nbt.putInt("Y", (int) rect.getMinY());
+		nbt.putInt("W", (int) rect.getWidth());
+		nbt.putInt("H", (int) rect.getHeight());
+		return nbt;
+	}
+
+	public static Rectangle rectangleFromNBT(CompoundNBT nbt) {
+		return new Rectangle(nbt.getInt("X"), nbt.getInt("Y"), nbt.getInt("W"), nbt.getInt("H"));
 	}
 
 }

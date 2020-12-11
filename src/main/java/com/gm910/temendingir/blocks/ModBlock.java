@@ -70,7 +70,7 @@ public class ModBlock extends Block {
 
 	}
 
-	private Map<Supplier<TileEntityType<?>>, BiPredicate<? super BlockState, ? super IBlockReader>> tileMap = new NonNullMap<Supplier<TileEntityType<?>>, BiPredicate<? super BlockState, ? super IBlockReader>>(
+	private Map<Supplier<TileEntityType<? extends TileEntity>>, BiPredicate<? super BlockState, ? super IBlockReader>> tileMap = new NonNullMap<Supplier<TileEntityType<?>>, BiPredicate<? super BlockState, ? super IBlockReader>>(
 			() -> (a, b) -> true);
 
 	/**
@@ -98,10 +98,10 @@ public class ModBlock extends Block {
 	 *                  hasTileEntity method does not provide a IBlockReader
 	 * @return
 	 */
-	public <T extends TileEntity> ModBlock addTileEntity(Supplier<TileEntityType<?>> sup,
+	public <T extends TileEntity> ModBlock addTileEntity(Supplier<TileEntityType<T>> sup,
 			@Nullable BiPredicate<? super BlockState, ? super IBlockReader> condition) {
 
-		this.tileMap.put(sup, condition == null ? (a, b) -> true : condition);
+		this.tileMap.put((Supplier) sup, condition == null ? (a, b) -> true : condition);
 		return this;
 	}
 

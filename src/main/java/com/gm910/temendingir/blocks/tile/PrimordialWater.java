@@ -44,7 +44,7 @@ import net.minecraft.util.CachedBlockInfo;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.util.Constants.NBT;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock;
@@ -185,7 +185,7 @@ public class PrimordialWater extends TileEntity implements ITickableTileEntity {
 				System.out.println("No pages");
 				return;
 			}
-			String page1 = pages.getString(0);
+			String page1 = ITextComponent.Serializer.getComponentFromJson(pages.getString(0)).getString();
 			NamingConvention naming = NamingConvention.from(page1);
 			if (naming == null) {
 				items.forEach((it) -> launch(it));
@@ -285,7 +285,7 @@ public class PrimordialWater extends TileEntity implements ITickableTileEntity {
 		ServerWorld world = (ServerWorld) event.getWorld();
 		if (event.getItemStack().getItem() == Items.BLAZE_ROD) {
 			for (Deity d : DeityData.get(world.getServer()).getDeities()) {
-				d.sendMessageTo(event.getPlayer(), new StringTextComponent(""));
+				d.setDilmunChunk(null);
 			}
 			System.out.println(DeityData.get(world.getServer()).getDeities());
 		}

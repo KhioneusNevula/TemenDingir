@@ -19,8 +19,6 @@ public class DilmunStructure extends Structure<DilmunStructureConfig> {
 				return p_236635_0_.deityUUID;
 			}).codec();
 
-	public static final DilmunStructure DILMUN_DESIGNER = new DilmunStructure(DEITY_FIELD_CODEC);
-
 	public DilmunStructure(Codec<DilmunStructureConfig> p_i231989_1_) {
 		super(p_i231989_1_);
 	}

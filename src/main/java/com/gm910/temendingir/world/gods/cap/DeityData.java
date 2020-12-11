@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import com.gm910.temendingir.TemenDingir;
 import com.gm910.temendingir.api.language.Translate;
@@ -16,12 +17,14 @@ import com.gm910.temendingir.capabilities.IModCapability;
 import com.gm910.temendingir.world.gods.Deity;
 import com.gm910.temendingir.world.gods.DeityCreationEvent;
 
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
@@ -69,6 +72,10 @@ public class DeityData implements IModCapability<MinecraftServer> {
 				.orElse(null);
 	}
 
+	public Deity getFromPositionWithinDilmun(BlockPos pos) {
+		return deities.stream().filter((e) -> e.getDilmunChunk() != null && e.isInDilmun(pos)).findAny().orElse(null);
+	}
+
 	public Deity getFromItems(ItemStack... stacks) {
 		List<Item> itemslist = new ArrayList<>();
 		for (ItemStack stack : stacks) {
@@ -87,6 +94,7 @@ public class DeityData implements IModCapability<MinecraftServer> {
 	public void addDeity(Deity d) {
 		this.deities.add(d);
 		d.setData(this);
+		MinecraftForge.EVENT_BUS.register(d);
 	}
 
 	/**
@@ -102,11 +110,16 @@ public class DeityData implements IModCapability<MinecraftServer> {
 			System.out.println("Creation of " + deity + " at " + pos + " canceled");
 			return;
 		}
+		deity.pledgeEntityToDeity((LivingEntity) ServerPos.getEntityFromUUID(deity.getCreator(), server));
+		if (deity.isFollower(deity.getCreator())) {
+			deity.setFollowerFavor(deity.getCreator(), Deity.FAVOR_MAX);
+		}
 		this.getServer().getPlayerList().getPlayers()
 				.forEach((e) -> deity.sendMessageTo(e, Translate.make("deity.created", deity.getName())));
 		ServerWorld world = pos.getWorld(server);
 		GMWorld.summonLightning(null, world, pos, null).setEffectOnly(true);
 		this.addDeity(deity);
+
 	}
 
 	public ServerWorld getWorld(ServerPos pos) {
@@ -115,6 +128,7 @@ public class DeityData implements IModCapability<MinecraftServer> {
 
 	public void removeDeity(Deity d) {
 		this.deities.remove(d);
+		MinecraftForge.EVENT_BUS.unregister(d);
 	}
 
 	public void read(CompoundNBT nbt) {
@@ -135,7 +149,8 @@ public class DeityData implements IModCapability<MinecraftServer> {
 		compound.put("Deities", GMNBT.makeList(deities, (deity) -> {
 			return deity.serialize();
 		}));
-		System.out.println("Saving deity data " + compound);
+		System.out.println(
+				"Saving deity data for " + deities.stream().map((e) -> e.getName()).collect(Collectors.toSet()));
 		return compound;
 	}
 

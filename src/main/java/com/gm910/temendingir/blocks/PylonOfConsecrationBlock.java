@@ -9,14 +9,16 @@ import net.minecraft.particles.ParticleTypes;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.StateContainer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.Explosion;
+import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
-public class PylonOfConsecration extends ModBlock {
+public class PylonOfConsecrationBlock extends ModBlock {
 	public static final BooleanProperty LINKED = BooleanProperty.create("linked");
 
-	public PylonOfConsecration() {
+	public PylonOfConsecrationBlock() {
 		super(Properties.create(Material.ROCK).setLightLevel((e) -> e.get(LINKED) ? 15 : 2));
 		this.setDefaultState(this.stateContainer.getBaseState().with(LINKED, Boolean.valueOf(false)));
 	}
@@ -30,6 +32,12 @@ public class PylonOfConsecration extends ModBlock {
 			double d2 = pos.getZ() + (rand.nextDouble() * 1.2) - 0.6;
 			worldIn.addParticle(ParticleTypes.ENCHANT, d0, d1, d2, 0.0D, 0.0D, 0.0D);
 		}
+	}
+
+	@Override
+	public float getExplosionResistance(BlockState state, IBlockReader world, BlockPos pos, Explosion explosion) {
+
+		return state.get(LINKED) ? 3600000 : super.getExplosionResistance(state, world, pos, explosion);
 	}
 
 	@Override

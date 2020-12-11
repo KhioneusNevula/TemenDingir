@@ -7,6 +7,7 @@ import com.gm910.temendingir.TemenDingir;
 import com.gm910.temendingir.api.networking.messages.Networking;
 import com.gm910.temendingir.api.networking.messages.types.TaskParticles;
 import com.gm910.temendingir.api.util.GMWorld;
+import com.gm910.temendingir.api.util.ServerPos;
 import com.gm910.temendingir.init.BlockInit;
 import com.gm910.temendingir.init.DimensionInit;
 import com.gm910.temendingir.init.TileInit;
@@ -101,7 +102,7 @@ public class FireOfCreation extends TileEntity implements ITickableTileEntity {
 			}
 			if (!break1) {
 				Deity d = (DeityData.get(world.getServer()).getFromItems(items.toArray(new ItemStack[0])));
-				if (d != this.invoked) {
+				if (this.invoked != null && d != this.invoked) {
 
 					break1 = true;
 				}
@@ -111,14 +112,6 @@ public class FireOfCreation extends TileEntity implements ITickableTileEntity {
 		if (break1) {
 			world.setBlockState(pos, Blocks.TORCH.getDefaultState());
 		} else {
-			List<PlayerEntity> entities = world.getEntitiesWithinAABB(PlayerEntity.class, new AxisAlignedBB(pos));
-			// TODO
-			DeityData data = DeityData.get(world.getServer());
-			entities.forEach((e) -> {
-				if (this.invoked.getFollowerIDs().contains(e.getUniqueID())) {
-					e.changeDimension(world.getServer().getWorld(DimensionInit.DILMUN)).addTag("traveler");
-				}
-			});
 		}
 	}
 
@@ -163,7 +156,21 @@ public class FireOfCreation extends TileEntity implements ITickableTileEntity {
 	public void tick() {
 		if (world.isRemote) {
 
+			return;
 		}
+		if (this.invoked == null)
+			return;
+		List<PlayerEntity> entities = world.getEntitiesWithinAABB(PlayerEntity.class, new AxisAlignedBB(pos));
+		// TODO why is dimension changing malfunctioning
+		entities.forEach((e) -> {
+			if (this.invoked.getFollowerIDs().contains(e.getUniqueID())
+					&& !invoked.getExtraEntityInfo(e.getUniqueID()).getBoolean("InDilmunPortal")) {
+				invoked.getExtraEntityInfo(e.getUniqueID()).put("PositionBeforeDilmun", new ServerPos(e).toNBT());
+				invoked.getExtraEntityInfo(e.getUniqueID()).putBoolean("InDilmunPortal", true);
+				e.changeDimension(world.getServer().getWorld(DimensionInit.DILMUN));
+
+			}
+		});
 
 	}
 
@@ -196,11 +203,12 @@ public class FireOfCreation extends TileEntity implements ITickableTileEntity {
 	@Override
 	public void read(BlockState state, CompoundNBT nbt) {
 		super.read(state, nbt);
-
+//TODO nbt this fireofcreation
 	}
 
 	@Override
 	public CompoundNBT write(CompoundNBT compound) {
+		// TODO nbt the fire of creation
 		return super.write(compound);
 	}
 

@@ -2,11 +2,14 @@ package com.gm910.temendingir.init;
 
 import com.gm910.temendingir.TemenDingir;
 import com.gm910.temendingir.blocks.LightBlock.LightBlockTile;
+import com.gm910.temendingir.blocks.tile.AltarOfConsecration;
+import com.gm910.temendingir.blocks.tile.EntityProjectorTile;
 import com.gm910.temendingir.blocks.tile.FireOfCreation;
 import com.gm910.temendingir.blocks.tile.PrimordialWater;
 
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraftforge.fml.RegistryObject;
+import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -25,14 +28,23 @@ public final class TileInit {
 			"fire_of_creation",
 			() -> TileEntityType.Builder.create(FireOfCreation::new, BlockInit.FIRE_OF_CREATION.get()).build(null));
 
+	public static final RegistryObject<TileEntityType<AltarOfConsecration>> ALTAR_OF_CONSECRATION = TILE_TYPES
+			.register("altar_of_consecration", () -> TileEntityType.Builder
+					.create(AltarOfConsecration::new, BlockInit.ALTAR_OF_CONSECRATION.get()).build(null));
+
 	public static final RegistryObject<TileEntityType<LightBlockTile>> LIGHT_BLOCK = TILE_TYPES.register("light_block",
 			() -> TileEntityType.Builder.create(LightBlockTile::new, BlockInit.LIGHT_BLOCK.get()).build(null));
+
+	public static final RegistryObject<TileEntityType<EntityProjectorTile>> ENTITY_PROJECTOR = TILE_TYPES
+			.register("entity_projector", () -> TileEntityType.Builder
+					.create(EntityProjectorTile::new, BlockInit.ENTITY_PROJECTOR.get()).build(null));
 
 	public static void registerTESRs() {
 		/*
 		 * ClientRegistry.bindTileEntityRenderer(TileInit.WORLD_CONTROLLER.get(),
 		 * WorldControllerTESR::new);
 		 */
+		ClientRegistry.bindTileEntityRenderer(ENTITY_PROJECTOR.get(), EntityProjectorTile.EntityProjectorRenderer::new);
 	}
 
 }
