@@ -1,6 +1,6 @@
 package com.gm910.temendingir.blocks;
 
-import com.gm910.temendingir.blocks.tile.AltarOfConsecration;
+import com.gm910.temendingir.blocks.tile.invokers.AltarOfConsecration;
 import com.gm910.temendingir.init.TileInit;
 
 import net.minecraft.block.Block;
@@ -30,9 +30,12 @@ public class AltarOfConsecrationBlock extends ModBlock {
 			boolean isMoving) {
 		AltarOfConsecration altar = (AltarOfConsecration) worldIn.getTileEntity(pos);
 		boolean prev = altar.isActivated;
-		altar.isActivated = worldIn.isBlockPowered(pos);
+		altar.isActivated = !worldIn.isBlockPowered(pos);
 		if (prev != altar.isActivated && !worldIn.isRemote) {
 			altar.updateHolyLandState();
+			altar.markDirty();
+
+			worldIn.notifyBlockUpdate(pos, worldIn.getBlockState(pos), worldIn.getBlockState(pos), 1 | 2);
 		}
 
 	}

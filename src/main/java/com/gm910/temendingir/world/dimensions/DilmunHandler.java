@@ -24,6 +24,8 @@ import net.minecraft.world.gen.feature.template.Template;
 import net.minecraft.world.gen.feature.template.TemplateManager;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.world.BlockEvent;
+import net.minecraftforge.event.world.ExplosionEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
@@ -32,6 +34,23 @@ public class DilmunHandler {
 
 	public static final ResourceLocation DILMUN_DESIGNER_RL = new ResourceLocation(TemenDingir.MODID,
 			"dilmun_designer");
+
+	@SubscribeEvent
+	public static void breakBlock(BlockEvent.BreakEvent event) {
+		if (event.getWorld() instanceof ServerWorld) {
+			if (((ServerWorld) event.getWorld()).getDimensionKey().getLocation()
+					.equals(DimensionInit.DILMUN.getLocation())) {
+				event.setCanceled(true);
+			}
+		}
+	}
+
+	@SubscribeEvent
+	public static void explode(ExplosionEvent.Detonate event) {
+		if (!event.getWorld().isRemote && event.getWorld().getDimensionKey() == DimensionInit.DILMUN) {
+			event.getAffectedBlocks().clear();
+		}
+	}
 
 	@SubscribeEvent
 	public static void claimDilmunForDeity(PlayerEvent.PlayerChangedDimensionEvent event) {
@@ -55,7 +74,7 @@ public class DilmunHandler {
 				System.out.println("Sending player " + event.getPlayer().getDisplayName().getString()
 						+ " to dilmunic chunk for deity " + deity + " at " + dchunk);
 				BlockPos positionTo = deity.getSettings().getExitPortal();
-				event.getPlayer().setPosition(positionTo.getX(), positionTo.getY(), positionTo.getZ());
+				event.getPlayer().setPosition(positionTo.getX(), positionTo.getY() + 0.3, positionTo.getZ());
 			}
 		}
 	}

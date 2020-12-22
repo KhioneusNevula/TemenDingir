@@ -2,10 +2,11 @@ package com.gm910.temendingir.init;
 
 import com.gm910.temendingir.TemenDingir;
 import com.gm910.temendingir.blocks.LightBlock.LightBlockTile;
-import com.gm910.temendingir.blocks.tile.AltarOfConsecration;
 import com.gm910.temendingir.blocks.tile.EntityProjectorTile;
-import com.gm910.temendingir.blocks.tile.FireOfCreation;
 import com.gm910.temendingir.blocks.tile.PrimordialWater;
+import com.gm910.temendingir.blocks.tile.invokers.AltarOfConsecration;
+import com.gm910.temendingir.blocks.tile.invokers.FireOfCreation;
+import com.gm910.temendingir.blocks.tile.invokers.FireOfWorship;
 
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraftforge.fml.RegistryObject;
@@ -27,6 +28,10 @@ public final class TileInit {
 	public static final RegistryObject<TileEntityType<FireOfCreation>> FIRE_OF_CREATION = TILE_TYPES.register(
 			"fire_of_creation",
 			() -> TileEntityType.Builder.create(FireOfCreation::new, BlockInit.FIRE_OF_CREATION.get()).build(null));
+
+	public static final RegistryObject<TileEntityType<FireOfWorship>> FIRE_OF_WORSHIP = TILE_TYPES.register(
+			"fire_of_worship",
+			() -> TileEntityType.Builder.create(FireOfWorship::new, BlockInit.FIRE_OF_WORSHIP.get()).build(null));
 
 	public static final RegistryObject<TileEntityType<AltarOfConsecration>> ALTAR_OF_CONSECRATION = TILE_TYPES
 			.register("altar_of_consecration", () -> TileEntityType.Builder

@@ -37,6 +37,19 @@ public class GMNBT {
 		return ls;
 	}
 
+	/**
+	 * Gets a list nbt without the hassle of figuring out what its "type" is and all
+	 * that; note that it MUST be an actual listnbt or this will throw a
+	 * classcastexception
+	 * 
+	 * @param nbt
+	 * @param name
+	 * @return
+	 */
+	public static ListNBT getList(CompoundNBT nbt, String name) {
+		return (ListNBT) nbt.get(name);
+	}
+
 	public static ListNBT makePosList(Iterable<? extends Vector3i> iter) {
 		return makeList(iter, (s) -> (ServerPos.toNBT(s)));
 	}

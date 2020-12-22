@@ -201,6 +201,10 @@ public class DilmunStructurePiece {
 				worldIn.setBlockState(pos, BlockInit.DILMUN_EXIT_PORTAL.get().getDefaultState(), 1);
 			}
 
+			if (function.equals("deityname")) {
+				// TODO make a sign saying the god's name for distinction n stuf
+			}
+
 			for (SettingType<?> type : DeityDilmunSettings.SettingType.values()) {
 				if (!function.startsWith(type.prefix)) {
 
@@ -223,6 +227,7 @@ public class DilmunStructurePiece {
 				type.updateBlock(enom, settings);
 
 			}
+			settings.initialize();
 		}
 
 	}

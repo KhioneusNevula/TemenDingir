@@ -31,6 +31,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.loot.LootContext;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.network.NetworkManager;
@@ -299,7 +300,10 @@ public class PrimordialWater extends TileEntity implements ITickableTileEntity {
 			BlockPos origin = altar.getFrontTopLeft().add(-1, -1, -1);
 			LightningBoltEntity zap = GMWorld.summonLightning(null, world, origin.up(), null);
 			zap.setEffectOnly(true);
+			world.getBlockState(origin.up()).getDrops(new LootContext.Builder(world));
 			world.setBlockState(origin.up(), Blocks.AIR.getDefaultState());
+
+			world.getBlockState(origin).getDrops(new LootContext.Builder(world));
 			world.setBlockState(origin, BlockInit.PRIMORDIAL_WATER.get().getDefaultState());
 			event.getPlayer().addItemStackToInventory(new ItemStack(Items.WRITABLE_BOOK));
 		}

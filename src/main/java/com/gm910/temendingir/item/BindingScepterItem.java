@@ -25,7 +25,7 @@ import net.minecraft.world.server.ServerWorld;
 public class BindingScepterItem extends ModItem {
 
 	public BindingScepterItem() {
-		super(new Item.Properties().group(ItemGroup.MISC).isImmuneToFire().maxStackSize(1).rarity(Rarity.UNCOMMON));
+		super(new Item.Properties().group(ItemGroup.TOOLS).isImmuneToFire().maxStackSize(1).rarity(Rarity.UNCOMMON));
 	}
 
 	public static ServerPos getNexus(ItemStack stack) {
@@ -52,7 +52,7 @@ public class BindingScepterItem extends ModItem {
 
 			System.out.println(nexus);
 			if (nexus.canLinkTo(new BlockInfo(world, pos)) && nexus.canContinueLinking()) {
-				nexus.addLinkedPosition(pos);
+				nexus.addLinkedPosition(pos, context.getPlayer(), context.getHand());
 				stack.getTag().remove("Nexus");
 				player.sendMessage(Translate.make("gidru.linked", "[" + nexuspos.getCoordinatesAsString() + "]",
 						"[" + pos.getCoordinatesAsString() + "]"), player.getUniqueID());

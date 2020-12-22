@@ -6,6 +6,7 @@ import com.gm910.temendingir.blocks.DilmunExitPortal;
 import com.gm910.temendingir.blocks.DivineWallBlock;
 import com.gm910.temendingir.blocks.EntityProjectorBlock;
 import com.gm910.temendingir.blocks.FireOfCreationBlock;
+import com.gm910.temendingir.blocks.FireOfWorshipBlock;
 import com.gm910.temendingir.blocks.LightBlock;
 import com.gm910.temendingir.blocks.ModBlock.BlockRegistryObject;
 import com.gm910.temendingir.blocks.PrimordialWaterBlock;
@@ -27,6 +28,8 @@ public class BlockInit {
 			PrimordialWaterBlock::new).createRegistryObject();
 	public static final RegistryObject<Block> FIRE_OF_CREATION = new BlockRegistryObject("fire_of_creation",
 			FireOfCreationBlock::new).createRegistryObject();
+	public static final RegistryObject<Block> FIRE_OF_WORSHIP = new BlockRegistryObject("fire_of_worship",
+			FireOfWorshipBlock::new).createRegistryObject();
 	public static final RegistryObject<Block> ALTAR_OF_CONSECRATION = new BlockRegistryObject("altar_of_consecration",
 			AltarOfConsecrationBlock::new).createRegistryObject();
 	public static final RegistryObject<Block> LIGHT_BLOCK = new BlockRegistryObject("light_block", LightBlock::new)

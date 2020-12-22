@@ -5,11 +5,12 @@ import java.awt.event.KeyEvent;
 import com.gm910.temendingir.api.events.ServerKeyEvent;
 import com.gm910.temendingir.api.networking.messages.ModTask;
 
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraftforge.common.MinecraftForge;
 
 public class TaskKeyPress extends ModTask {
 
-	public final int key;
+	private int key;
 
 	public TaskKeyPress() {
 		key = 0;
@@ -27,6 +28,27 @@ public class TaskKeyPress extends ModTask {
 	@Override
 	public String toString() {
 		return super.toString() + ": " + KeyEvent.getModifiersExText(key);
+	}
+
+	public int getKey() {
+		return key;
+	}
+
+	@Override
+	public CompoundNBT write() {
+		CompoundNBT dat = super.write();
+		dat.putInt("Key", key);
+		return dat;
+	}
+
+	@Override
+	protected void read(CompoundNBT nbt) {
+		this.key = nbt.getInt("Key");
+	}
+
+	@Override
+	public boolean isLClient() {
+		return false;
 	}
 
 }

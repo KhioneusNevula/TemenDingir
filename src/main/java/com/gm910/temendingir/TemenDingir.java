@@ -2,6 +2,7 @@ package com.gm910.temendingir;
 
 import com.gm910.temendingir.api.networking.messages.ModChannels;
 import com.gm910.temendingir.api.networking.messages.Networking.TaskMessage;
+import com.gm910.temendingir.blocks.tile.invokers.InvokerTileHelper;
 import com.gm910.temendingir.capabilities.GMCaps;
 import com.gm910.temendingir.init.BlockInit;
 import com.gm910.temendingir.init.EffectInit;
@@ -10,6 +11,9 @@ import com.gm910.temendingir.init.ItemInit;
 import com.gm910.temendingir.init.StructureInit;
 import com.gm910.temendingir.init.TileInit;
 import com.gm910.temendingir.keys.ModKeys;
+import com.gm910.temendingir.world.temperature.HeatEmitterHandler;
+import com.gm910.temendingir.world.temperature.HeatFunctionHandler;
+import com.gm910.temendingir.world.temperature.HeatRateHandler;
 
 import net.minecraft.block.Block;
 import net.minecraftforge.common.MinecraftForge;
@@ -79,12 +83,11 @@ public class TemenDingir {
 		EntityInit.registerRenderers();
 	}
 
-	private void enqueueIMC(
-			final InterModEnqueueEvent event) {/*
-												 * // some example code to dispatch IMC to another mod
-												 * InterModComms.sendTo("examplemod", "helloworld", () -> {
-												 * LOGGER.info("Hello world from the MDK"); return "Hello world";});
-												 */
+	private void enqueueIMC(final InterModEnqueueEvent event) {/*
+																 * // some example code to dispatch IMC to another mod
+																 * InterModComms.sendTo("examplemod", "helloworld", () -> {
+																 * LOGGER.info("Hello world from the MDK"); return "Hello world";});
+																 */
 	}
 
 	private void processIMC(final InterModProcessEvent event) {
@@ -99,7 +102,10 @@ public class TemenDingir {
 	@SubscribeEvent
 	public void onServerStarting(FMLServerStartingEvent event) {
 		// do something when the server starts
-
+		InvokerTileHelper.registerAll();
+		HeatRateHandler.initTemperatureValues();
+		HeatEmitterHandler.initTemperatureValues();
+		HeatFunctionHandler.initSet();
 	}
 
 	// You can use EventBusSubscriber to automatically subscribe events on the

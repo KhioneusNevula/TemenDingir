@@ -1,17 +1,21 @@
 package com.gm910.temendingir.world.gods.cap.dilmunmanager;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.gm910.temendingir.api.language.Translate;
 import com.gm910.temendingir.api.util.GMHelper;
 import com.gm910.temendingir.api.util.GMNBT;
 import com.gm910.temendingir.api.util.ServerPos;
 import com.gm910.temendingir.world.gods.Deity;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mojang.datafixers.util.Pair;
 
@@ -59,11 +63,13 @@ public class DeityDilmunSettings {
 
 	});
 
-	private Object2BooleanMap<SettingTypeEnum> settingsMap = new Object2BooleanRBTreeMap<>();
+	private Object2BooleanMap<SettingTypeEnum> settingsMap = new Object2BooleanRBTreeMap<>(
+			(e1, e2) -> e1.name().compareTo(e2.name()));
 
 	private Set<EntityType<?>> enemies = new HashSet<>(); // TODO figure out how to make an enemies map thing
 
-	private Map<SettingTypeEnum, ServerPos> settingPositionsMap = new TreeMap<>();
+	private Map<SettingTypeEnum, ServerPos> settingPositionsMap = new TreeMap<>(
+			(e1, e2) -> e1.name().compareTo(e2.name()));
 
 	private Map<SettingType<?>, ServerPos> settingSignsMap = new TreeMap<>();
 
@@ -80,14 +86,14 @@ public class DeityDilmunSettings {
 
 	public boolean isComplete() {
 
-		boolean settings = false;
-		outer: for (SettingType<?> settingtype : SettingType.values()) {
-			for (SettingTypeEnum setting : settingtype.getEnumValues()) {
+		boolean settings = true;
+		for (SettingType<?> settingtype : SettingType.values()) {
+			/*for (SettingTypeEnum setting : settingtype.getEnumValues()) {
 				if (!this.settingsMap.containsKey(setting)) {
 					settings = false;
 					break outer;
 				}
-			}
+			}*/
 			if (!areSettingsValid(settingtype)) {
 				settings = false;
 				break;
@@ -133,6 +139,12 @@ public class DeityDilmunSettings {
 				.filter((m) -> settingPositionsMap.get(m) == null).findAny().isPresent();
 	}
 
+	public void initialize() {
+		List<Pronoun> pronouns = Lists.newArrayList(Pronoun.values());
+		pronouns.sort((e1, e2) -> (new Random()).nextInt(2) - 1);
+		this.setSettingsValue(pronouns.get(0), true);
+	}
+
 	public boolean getSettingsValue(SettingTypeEnum setting) {
 		return this.settingsMap.getBoolean(setting);
 	}
@@ -163,6 +175,28 @@ public class DeityDilmunSettings {
 
 	public void setExitPortal(BlockPos exitPortal) {
 		this.exitPortal = exitPortal;
+	}
+
+	/**
+	 * Returns all currently active settings for the given type
+	 * 
+	 * @param <T>
+	 * @param type
+	 * @return
+	 */
+	public <T extends SettingTypeEnum> Set<T> getActiveSettingsFor(SettingType<T> type) {
+		return type.getEnumValues().stream().filter((e) -> this.getSettingsValue(e)).collect(Collectors.toSet());
+	}
+
+	/**
+	 * Returns all inactive settings for the given type
+	 * 
+	 * @param <T>
+	 * @param type
+	 * @return
+	 */
+	public <T extends SettingTypeEnum> Set<T> getInactiveSettingsFor(SettingType<T> type) {
+		return type.getEnumValues().stream().filter((e) -> !this.getSettingsValue(e)).collect(Collectors.toSet());
 	}
 
 	public boolean setSettingsValueAndUpdate(SettingTypeEnum setting, boolean value) {
@@ -409,7 +443,7 @@ public class DeityDilmunSettings {
 				BlockState state = valid ? Blocks.DARK_OAK_WALL_SIGN.getDefaultState()
 						: Blocks.BIRCH_WALL_SIGN.getDefaultState();
 				state = state.with(WallSignBlock.FACING, facing);
-				world.setBlockState(pos, state, 1 | 2);
+				world.setBlockState(pos, state, 0);
 				Pair<Integer, Integer> minmax = man.minMaxPointMap.get(type);
 				if (minmax == null)
 					throw new IllegalStateException(type + " has a null min-max");

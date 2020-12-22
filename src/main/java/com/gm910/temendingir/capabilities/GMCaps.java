@@ -2,11 +2,14 @@ package com.gm910.temendingir.capabilities;
 
 import com.gm910.temendingir.world.gods.cap.DeityData;
 import com.gm910.temendingir.world.gods.cap.DeityStorage;
+import com.gm910.temendingir.world.temperature.Temperatures;
+import com.gm910.temendingir.world.temperature.Temperatures.TemperatureStorage;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.Direction;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.CapabilityManager;
@@ -21,6 +24,9 @@ public class GMCaps<T, K> implements ICapabilitySerializable<CompoundNBT> {
 
 	@CapabilityInject(DeityData.class)
 	public static Capability<DeityData> DEITY_DATA = null;
+
+	@CapabilityInject(Temperatures.class)
+	public static Capability<Temperatures> TEMPERATURES = null;
 
 	private Capability<T> capability;
 
@@ -66,6 +72,10 @@ public class GMCaps<T, K> implements ICapabilitySerializable<CompoundNBT> {
 		CapabilityManager.INSTANCE.register(DeityData.class, new DeityStorage(), () -> {
 			return new DeityData();
 		});
+
+		CapabilityManager.INSTANCE.register(Temperatures.class, new TemperatureStorage(), () -> {
+			return new Temperatures();
+		});
 	}
 
 	@SubscribeEvent
@@ -74,9 +84,16 @@ public class GMCaps<T, K> implements ICapabilitySerializable<CompoundNBT> {
 	}
 
 	@SubscribeEvent
-	public static void attachCh(AttachCapabilitiesEvent<World> event) {
+	public static void attachW(AttachCapabilitiesEvent<World> event) {
 		if (!event.getObject().isRemote && event.getObject().getDimensionKey().equals(World.OVERWORLD)) {
 			event.addCapability(DeityData.NAME, new GMCaps<>(DEITY_DATA, event.getObject().getServer()));
+		}
+	}
+
+	@SubscribeEvent
+	public static void attachCh(AttachCapabilitiesEvent<Chunk> event) {
+		if (!event.getObject().getWorld().isRemote) {
+			event.addCapability(Temperatures.NAME, new GMCaps<>(TEMPERATURES, event.getObject()));
 		}
 	}
 

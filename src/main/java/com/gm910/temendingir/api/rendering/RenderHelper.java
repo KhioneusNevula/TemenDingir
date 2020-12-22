@@ -41,4 +41,8 @@ public class RenderHelper {
 			}
 		}
 	}
+
+	public static float charWidth(String chara) {
+		return Minecraft.getInstance().fontRenderer.getCharacterManager().func_238350_a_(chara);
+	}
 }

@@ -69,10 +69,13 @@ public class DilmunExitPortal extends ModBlock {
 							over.getWorldInfo().getSpawnZ());
 					former = new ServerPos(spawn, over);
 				}
+				ServerWorld worldTo = former.getWorld(d.getData().getServer());
 				// TODO totally buggy dimensionalportation
-				entityIn.setPosition(former.getX(), former.getY(), former.getZ());
-				entityIn.changeDimension(former.getWorld(d.getData().getServer()));
-				d.getExtraEntityInfo(entityIn.getUniqueID()).remove("PositionBeforeDilmun");
+				if (worldTo != null) {
+					entityIn.setPosition(former.getX(), former.getY(), former.getZ());
+					entityIn.changeDimension(worldTo);
+					d.getExtraEntityInfo(entityIn.getUniqueID()).remove("PositionBeforeDilmun");
+				}
 			}
 		}
 	}

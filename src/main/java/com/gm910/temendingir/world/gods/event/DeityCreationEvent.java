@@ -1,19 +1,17 @@
-package com.gm910.temendingir.world.gods;
+package com.gm910.temendingir.world.gods.event;
 
 import com.gm910.temendingir.api.util.ServerPos;
+import com.gm910.temendingir.world.gods.Deity;
 
 import net.minecraftforge.eventbus.api.Cancelable;
-import net.minecraftforge.eventbus.api.Event;
 
 @Cancelable
-public class DeityCreationEvent extends Event {
-
-	public final Deity deity;
+public class DeityCreationEvent extends DeityEvent {
 
 	public final ServerPos pos;
 
 	public DeityCreationEvent(Deity deity, ServerPos pos) {
-		this.deity = deity;
+		super(deity);
 		this.pos = pos;
 	}
 }

@@ -5,4 +5,6 @@ public interface SettingTypeEnum {
 
 	public int getPoints();
 
+	public String name();
+
 }

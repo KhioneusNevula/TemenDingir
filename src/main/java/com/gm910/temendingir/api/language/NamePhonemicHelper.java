@@ -12,16 +12,15 @@ import java.util.stream.Stream;
 import com.gm910.temendingir.api.util.GMHelper;
 import com.google.common.collect.Sets;
 
-import net.minecraft.nbt.ListNBT;
-import net.minecraftforge.common.util.INBTSerializable;
-
 public class NamePhonemicHelper {
 
 	public static final Phoneme Y = new Phoneme("y", false) {
+		@Override
 		public boolean isConsonant() {
 			return true;
 		};
 
+		@Override
 		public boolean isVowel() {
 			return true;
 		};
@@ -29,30 +28,36 @@ public class NamePhonemicHelper {
 	};
 
 	public static final Phoneme UNKNOWN = new Phoneme("[?]", false) {
+		@Override
 		public boolean isConsonant() {
 			return false;
 		}
 
+		@Override
 		public boolean isVowel() {
 			return false;
 		}
 	};
 
 	public static final Phoneme DASH = new Phoneme("-", false) {
+		@Override
 		public boolean isConsonant() {
 			return false;
 		};
 
+		@Override
 		public boolean isVowel() {
 			return false;
 		};
 	};
 
 	public static final Phoneme SPACE = new Phoneme(" ", false) {
+		@Override
 		public boolean isConsonant() {
 			return false;
 		};
 
+		@Override
 		public boolean isVowel() {
 			return false;
 		};
@@ -73,10 +78,12 @@ public class NamePhonemicHelper {
 				"wn", "wl", "wt", "ws"));
 		set.addAll(Consonant.from(false, false, false, "'"));
 		set.add(new Consonant("y", true, true, false) {
+			@Override
 			public boolean isConsonant() {
 				return true;
 			}
 
+			@Override
 			public boolean isVowel() {
 				return true;
 			}
@@ -100,10 +107,12 @@ public class NamePhonemicHelper {
 			}
 		}
 		set.add(new Vowel("y", false) {
+			@Override
 			public boolean isConsonant() {
 				return true;
 			}
 
+			@Override
 			public boolean isVowel() {
 				return true;
 			}
@@ -202,7 +211,7 @@ public class NamePhonemicHelper {
 	}
 
 	public static PhonemeWord generateName(Random rand) {
-		return generateName(rand, 2 + rand.nextInt(9));
+		return generateName(rand, 2 + rand.nextInt(6));
 	}
 
 	public static PhonemeWord generateName(Random rand, int phonemicLength) {

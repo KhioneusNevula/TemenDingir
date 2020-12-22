@@ -14,12 +14,18 @@ public class DivineDamageSource extends DamageSource {
 	protected final Deity divineSource;
 
 	public static DivineDamageSource holyLandDamage(Deity source) {
-		return new DivineDamageSource("land", source);
+		return (DivineDamageSource) new DivineDamageSource("land", source).setDamageIsAbsolute();
+	}
+
+	public static DivineDamageSource holyFireDamage(Deity source) {
+		return (DivineDamageSource) new DivineDamageSource("fire", source).setFireDamage().setDamageIsAbsolute();
 	}
 
 	public DivineDamageSource(String damageTypeIn, Deity divineSource) {
 		super(damageTypeIn);
 		this.divineSource = divineSource;
+		this.setMagicDamage();
+		this.setDamageBypassesArmor();
 	}
 
 	/**

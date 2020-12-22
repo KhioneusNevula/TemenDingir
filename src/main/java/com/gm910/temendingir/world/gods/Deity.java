@@ -1,5 +1,6 @@
 package com.gm910.temendingir.world.gods;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,6 +22,7 @@ import com.gm910.temendingir.api.util.NonNullTreeMap;
 import com.gm910.temendingir.api.util.ServerPos;
 import com.gm910.temendingir.blocks.DilmunExitPortal;
 import com.gm910.temendingir.blocks.FireOfCreationBlock;
+import com.gm910.temendingir.blocks.tile.invokers.AltarOfConsecration;
 import com.gm910.temendingir.damage.DivineDamageSource;
 import com.gm910.temendingir.world.gods.cap.DeityData;
 import com.gm910.temendingir.world.gods.cap.dilmunmanager.Commandment;
@@ -56,6 +58,8 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.GameType;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.TickEvent.ServerTickEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
@@ -73,7 +77,7 @@ public class Deity implements ICommandSource {
 	public static final float INITIAL_FOLLOWER_FAVOR = 50;
 	private String name;
 	private UUID uuid = UUID.randomUUID();
-	private Map<UUID, Float> followers = new HashMap<>();
+	private Map<UUID, Float> followers = new TreeMap<>();
 	private InvocationItems invocation = new InvocationItems();
 	private UUID creator;
 	private DeityData data;
@@ -83,10 +87,14 @@ public class Deity implements ICommandSource {
 	private NamingConvention naming;
 	private DeityDilmunSettings settings = new DeityDilmunSettings(this);
 	private CompoundNBT tagCompound = new CompoundNBT();
+	private DeityEnergyStorage energy = new DeityEnergyStorage(0, this);
+	private boolean deactivateHolyLand = false;
 
 	private Map<ServerPos, Rectangle> consecrationNexi = new TreeMap<>();
 	private Map<RegistryKey<World>, Set<BlockPos>> consecratedRegion = new NonNullTreeMap<>(Sets::newHashSet, null);
 	private Map<RegistryKey<World>, Set<BlockPos>> consecratedOutline = new NonNullTreeMap<>(Sets::newHashSet, null);
+	private Map<RegistryKey<World>, Set<Point>> groundArea = new NonNullTreeMap<>(Sets::newHashSet, null);
+
 	private Deity.Level level = Deity.Level.FIRST;
 
 	public Deity(String name, NamingConvention naming, UUID creator) {
@@ -193,6 +201,8 @@ public class Deity implements ICommandSource {
 		}));
 		this.tagCompound = nbt.getCompound("ExtraData");
 		this.level = Level.values()[nbt.getInt("Level")];
+
+		this.energy.forceSetEnergyStored(nbt.getDouble("Energy"));
 	}
 
 	public CompoundNBT serialize() {
@@ -216,6 +226,7 @@ public class Deity implements ICommandSource {
 		nbt.putString("NamingCon", naming.toString());
 		nbt.put("ExtraData", this.tagCompound);
 		nbt.putInt("Level", level.ordinal());
+		nbt.putDouble("Energy", energy.getEnergyStored());
 		return nbt;
 	}
 
@@ -244,6 +255,14 @@ public class Deity implements ICommandSource {
 	@Override
 	public boolean shouldReceiveErrors() {
 		return false;
+	}
+
+	public DeityEnergyStorage getEnergyStorage() {
+		return energy;
+	}
+
+	public double getEnergyStored() {
+		return energy.getEnergyStored();
 	}
 
 	@Override
@@ -420,7 +439,7 @@ public class Deity implements ICommandSource {
 	public void containerOpen(PlayerContainerEvent.Open event) {
 		if (event.getEntity().world.isRemote)
 			return;
-		if (this.isWithinHolyLand(event.getPlayer())) {
+		if (this.isWithinHolyLand(event.getPlayer()) && this.getCreationStage().isComplete()) {
 			if (!this.isFollower(event.getPlayer().getUniqueID())) {
 				if (this.settings.getSettingsValue(ConsecrationPermission.NO_OPENING)) {
 					((ServerPlayerEntity) event.getPlayer()).closeScreen();
@@ -433,7 +452,7 @@ public class Deity implements ICommandSource {
 	public void itemUse(PlayerInteractEvent.RightClickItem event) {
 		if (event.getEntity().world.isRemote)
 			return;
-		if (this.isWithinHolyLand(event.getPlayer())) {
+		if (this.isWithinHolyLand(event.getPlayer()) && this.getCreationStage().isComplete()) {
 			if (!this.isFollower(event.getPlayer().getUniqueID())) {
 				if (this.settings.getSettingsValue(ConsecrationPermission.NO_TOUCHING)) {
 					event.setCanceled(true);
@@ -448,7 +467,8 @@ public class Deity implements ICommandSource {
 	public void blockInteract(PlayerInteractEvent.RightClickBlock event) {
 		if (event.getEntity().world.isRemote)
 			return;
-		if (this.isWithinHolyLand(new ServerPos(event.getPos(), event.getWorld().getDimensionKey()))) {
+		if (this.isWithinHolyLand(new ServerPos(event.getPos(), event.getWorld().getDimensionKey()))
+				&& this.getCreationStage().isComplete()) {
 			if (!this.isFollower(event.getPlayer().getUniqueID())) {
 				if (this.settings.getSettingsValue(ConsecrationPermission.NO_TOUCHING)
 						|| this.settings.getSettingsValue(ConsecrationPermission.NO_SLEEPING)
@@ -466,7 +486,7 @@ public class Deity implements ICommandSource {
 	public void entityInteract(PlayerInteractEvent.EntityInteract event) {
 		if (event.getEntity().world.isRemote)
 			return;
-		if (this.isWithinHolyLand(event.getEntity())) {
+		if (this.isWithinHolyLand(event.getEntity()) && this.getCreationStage().isComplete()) {
 			if (!this.isFollower(event.getPlayer().getUniqueID())) {
 				if (this.settings.getSettingsValue(ConsecrationPermission.NO_INTERACTING)) {
 					event.setCanceled(true);
@@ -481,7 +501,7 @@ public class Deity implements ICommandSource {
 	public void entityInteract(PlayerInteractEvent.EntityInteractSpecific event) {
 		if (event.getEntity().world.isRemote)
 			return;
-		if (this.isWithinHolyLand(event.getEntity())) {
+		if (this.isWithinHolyLand(event.getEntity()) && this.getCreationStage().isComplete()) {
 			if (!this.isFollower(event.getPlayer().getUniqueID())) {
 				if (this.settings.getSettingsValue(ConsecrationPermission.NO_INTERACTING)) {
 					event.setCanceled(true);
@@ -494,10 +514,12 @@ public class Deity implements ICommandSource {
 
 	@SubscribeEvent
 	public void sleep(SleepFinishedTimeEvent event) {
-		for (PlayerEntity player : this.getPlayerFollowers()) {
-			if (player.isSleeping() && this.isFollower(player.getUniqueID())
-					&& this.settings.getSettingsValue(Commandment.NO_SLEEP)) {
-				this.changeFollowerFavor(player.getUniqueID(), -Commandment.NO_SLEEP.getFavorSubtraction(), true);
+		if (this.getCreationStage().isComplete()) {
+			for (PlayerEntity player : this.getPlayerFollowers()) {
+				if (player.isSleeping() && this.isFollower(player.getUniqueID())
+						&& this.settings.getSettingsValue(Commandment.NO_SLEEP)) {
+					this.changeFollowerFavor(player.getUniqueID(), -Commandment.NO_SLEEP.getFavorSubtraction(), true);
+				}
 			}
 		}
 	}
@@ -506,7 +528,8 @@ public class Deity implements ICommandSource {
 	public void breakEvent(BreakEvent event) {
 		if (event.getWorld().isRemote())
 			return;
-		if (this.isWithinHolyLand(new ServerPos(event.getPos(), event.getPlayer().world.getDimensionKey()))) {
+		if (this.getCreationStage().isComplete()
+				&& this.isWithinHolyLand(new ServerPos(event.getPos(), event.getPlayer().world.getDimensionKey()))) {
 			if (!this.isFollower(event.getPlayer().getUniqueID())) {
 				if (this.settings.getSettingsValue(ConsecrationPermission.NO_GRIEFING)
 						|| this.settings.getSettingsValue(ConsecrationPermission.ADVENTURE)) {
@@ -520,23 +543,26 @@ public class Deity implements ICommandSource {
 	public void attacked(LivingAttackEvent event) {
 		if (event.getEntity().world.isRemote)
 			return;
-		if ((event.getEntity() instanceof PlayerEntity)) {
-			ServerPlayerEntity player = (ServerPlayerEntity) event.getEntity();
-			if (this.isWithinHolyLand(player)) {
-				if (this.isFollower(player.getUniqueID())) {
-					if (this.settings.getSettingsValue(ConsecrationProtection.NO_HARM)
-							&& event.getSource().getTrueSource() instanceof PlayerEntity) {
-						event.setCanceled(true);
+		if (this.getCreationStage().isComplete()) {
+			if ((event.getEntity() instanceof PlayerEntity)) {
+				ServerPlayerEntity player = (ServerPlayerEntity) event.getEntity();
+				if (this.isWithinHolyLand(player)) {
+					if (this.isFollower(player.getUniqueID())) {
+						if (this.settings.getSettingsValue(ConsecrationProtection.NO_HARM)
+								&& event.getSource().getTrueSource() instanceof PlayerEntity) {
+							event.setCanceled(true);
+						}
 					}
 				}
-			}
-		} else if (event.getSource().getTrueSource() instanceof PlayerEntity && isWithinHolyLand(event.getEntity())) {
-			ServerPlayerEntity player = (ServerPlayerEntity) event.getSource().getTrueSource();
-			if (!this.isFollower(player.getUniqueID())) {
-				if (this.settings.getSettingsValue(ConsecrationPermission.NO_HURTING)) {
-					event.setCanceled(true);
-				}
+			} else if (event.getSource().getTrueSource() instanceof PlayerEntity
+					&& isWithinHolyLand(event.getEntity())) {
+				ServerPlayerEntity player = (ServerPlayerEntity) event.getSource().getTrueSource();
+				if (!this.isFollower(player.getUniqueID())) {
+					if (this.settings.getSettingsValue(ConsecrationPermission.NO_HURTING)) {
+						event.setCanceled(true);
+					}
 
+				}
 			}
 		}
 	}
@@ -556,74 +582,77 @@ public class Deity implements ICommandSource {
 		if (!(event.getEntity() instanceof PlayerEntity))
 			return;
 		ServerPlayerEntity player = (ServerPlayerEntity) event.getEntity();
-		if (settings.getSettingsValue(Commandment.NO_SLEEP) && this.isFollower(player.getUniqueID())) {
+		if (this.getCreationStage().isComplete() && settings.getSettingsValue(Commandment.NO_SLEEP)
+				&& this.isFollower(player.getUniqueID())) {
 			player.getStats().setValue(player, Stats.CUSTOM.get(Stats.TIME_SINCE_REST), 0);
 		}
 		if (isWithinHolyLand(player)) {
 			this.getExtraEntityInfo(player.getUniqueID()).putBoolean("WasInHolyLand", true);
 			DeityDilmunSettings settings = this.getSettings();
-			if (this.isFollower(player.getUniqueID())) {
-				if (settings.getSettingsValue(ConsecrationProtection.HEALING)) {
-					if (player.world.getGameTime() % 100 == 0) {
-						player.addPotionEffect(new EffectInstance(Effects.INSTANT_HEALTH, 1));
-					}
-				}
-
-				if (settings.getSettingsValue(ConsecrationProtection.DISCOUNTED_TRADE)) {
-					if (player.getActivePotionEffect(Effects.HERO_OF_THE_VILLAGE) == null) {
-
-						player.addPotionEffect(new EffectInstance(Effects.HERO_OF_THE_VILLAGE, 25));
+			if (this.getCreationStage().isComplete()) {
+				if (this.isFollower(player.getUniqueID())) {
+					if (settings.getSettingsValue(ConsecrationProtection.HEALING)) {
+						if (player.world.getGameTime() % 100 == 0) {
+							player.addPotionEffect(new EffectInstance(Effects.INSTANT_HEALTH, 1));
+						}
 					}
 
-				}
+					if (settings.getSettingsValue(ConsecrationProtection.DISCOUNTED_TRADE)) {
+						if (player.getActivePotionEffect(Effects.HERO_OF_THE_VILLAGE) == null) {
 
-				if (settings.getSettingsValue(ConsecrationProtection.NO_HUNGER)) {
-					if (player.getFoodStats().needFood()) {
-						player.getFoodStats().setFoodLevel(20);
-					}
-					if (player.getActivePotionEffect(Effects.SATURATION) == null) {
-						player.addPotionEffect(new EffectInstance(Effects.SATURATION, 10));
-					}
-					player.removeActivePotionEffect(Effects.HUNGER);
-				}
-				if (settings.getSettingsValue(ConsecrationProtection.NO_DROWNING)) {
-					if (player.getAir() < player.getMaxAir()) {
-						player.setAir(player.getMaxAir());
-					}
-				}
-			} else {
-				if (!settings.getSettingsValue(ConsecrationPermission.ADVENTURE)) {
-					if (settings.getSettingsValue(ConsecrationPermission.NO_GRIEFING)) {
-						boolean allowEdit = player.abilities.allowEdit;
-						this.getExtraEntityInfo(player.getUniqueID()).putBoolean("AllowedEdit", allowEdit);
-						player.abilities.allowEdit = false;
+							player.addPotionEffect(new EffectInstance(Effects.HERO_OF_THE_VILLAGE, 25));
+						}
 
-						// TODO more permissions, fix serializing thing
+					}
+
+					if (settings.getSettingsValue(ConsecrationProtection.NO_HUNGER)) {
+						if (player.getFoodStats().needFood()) {
+							player.getFoodStats().setFoodLevel(20);
+						}
+						if (player.getActivePotionEffect(Effects.SATURATION) == null) {
+							player.addPotionEffect(new EffectInstance(Effects.SATURATION, 10));
+						}
+						player.removeActivePotionEffect(Effects.HUNGER);
+					}
+					if (settings.getSettingsValue(ConsecrationProtection.NO_DROWNING)) {
+						if (player.getAir() < player.getMaxAir()) {
+							player.setAir(player.getMaxAir());
+						}
 					}
 				} else {
-					if (player.interactionManager.getGameType() == GameType.SURVIVAL) {
-						player.setGameType(GameType.ADVENTURE);
-						this.getExtraEntityInfo(player.getUniqueID()).putBoolean("WasSurvivalMode", true);
+					if (!settings.getSettingsValue(ConsecrationPermission.ADVENTURE)) {
+						if (settings.getSettingsValue(ConsecrationPermission.NO_GRIEFING)) {
+							boolean allowEdit = player.abilities.allowEdit;
+							this.getExtraEntityInfo(player.getUniqueID()).putBoolean("AllowedEdit", allowEdit);
+							player.abilities.allowEdit = false;
+
+							// TODO more permissions, fix serializing thing
+						}
 					} else {
-						boolean allowEdit = player.abilities.allowEdit;
-						this.getExtraEntityInfo(player.getUniqueID()).putBoolean("AllowedEdit", allowEdit);
-						player.abilities.allowEdit = false;
+						if (player.interactionManager.getGameType() == GameType.SURVIVAL) {
+							player.setGameType(GameType.ADVENTURE);
+							this.getExtraEntityInfo(player.getUniqueID()).putBoolean("WasSurvivalMode", true);
+						} else {
+							boolean allowEdit = player.abilities.allowEdit;
+							this.getExtraEntityInfo(player.getUniqueID()).putBoolean("AllowedEdit", allowEdit);
+							player.abilities.allowEdit = false;
+						}
+						// TODO more permissions, fix serializing thing
 					}
-					// TODO more permissions, fix serializing thing
+
+					if (settings.getSettingsValue(ConsecrationPermission.NO_ENTRY)) {
+
+						event.getEntityLiving().applyKnockback(1, 1, 1);
+
+					}
+
+					if (settings.getSettingsValue(ConsecrationPermission.NO_ENTRY_HARM)
+							&& event.getEntity().world.getGameTime() % 50 == 0) {
+						GMWorld.summonMagicLightning(DivineDamageSource.holyLandDamage(this), event.getEntity().world,
+								event.getEntity().getPosition(), null);
+					}
+
 				}
-
-				if (settings.getSettingsValue(ConsecrationPermission.NO_ENTRY)) {
-
-					event.getEntityLiving().applyKnockback(1, 1, 1);
-
-				}
-
-				if (settings.getSettingsValue(ConsecrationPermission.NO_ENTRY_HARM)
-						&& event.getEntity().world.getGameTime() % 50 == 0) {
-					GMWorld.summonMagicLightning(DivineDamageSource.holyLandDamage(this), event.getEntity().world,
-							event.getEntity().getPosition(), null);
-				}
-
 			}
 		} else {
 			CompoundNBT nbt = this.getExtraEntityInfo(player.getUniqueID());
@@ -645,7 +674,7 @@ public class Deity implements ICommandSource {
 	public void kill(LivingDeathEvent event) {
 		if (event.getSource().getTrueSource() != null) {
 			Entity violator = event.getSource().getTrueSource();
-			if (this.isFollower(violator.getUniqueID())) {
+			if (this.getCreationStage().isComplete() && this.isFollower(violator.getUniqueID())) {
 				if ((event.getEntityLiving() instanceof MobEntity)) {
 					MobEntity mob = (MobEntity) event.getEntityLiving();
 					if (mob.getClassification(true).getPeacefulCreature()
@@ -674,40 +703,89 @@ public class Deity implements ICommandSource {
 		}
 	}
 
+	public Map<RegistryKey<World>, Set<Point>> getGroundArea() {
+		return groundArea;
+	}
+
+	@SubscribeEvent
+	public void serverTick(ServerTickEvent event) {
+		if (event.phase == TickEvent.Phase.START) {
+			return;
+		}
+		int blocks = (int) this.getGroundArea().entrySet().stream().flatMap((entry) -> entry.getValue().stream())
+				.count();
+		//System.out.println("Blocks " + blocks);
+		int discount = this.getConsecrationNexi().size() * AltarOfConsecration.DISCOUNT_PER_NEXUS;
+		if (blocks <= discount) {
+			blocks = discount;
+		} else {
+			blocks -= discount;
+		}
+
+		double energySubtracted = blocks * AltarOfConsecration.ENERGY_PER_TICK_PER_BLOCK;
+
+		double extract = this.energy.extractEnergy(energySubtracted, true);
+		boolean previous = this.deactivateHolyLand;
+		if (energySubtracted > extract || extract == 0) {
+			this.deactivateHolyLand = true; // TODO figure out this god consecration energy problem
+		} else {
+			this.deactivateHolyLand = false;
+		}
+		if (previous != this.deactivateHolyLand) { // If there was a change in the holy land state, recalculate the holy land
+			System.out.println(deactivateHolyLand + " " + energySubtracted + " intended but only " + extract);
+			this.recalculateConsecrationAreaAndOutline();
+
+		}
+	}
+
 	public void recalculateConsecrationAreaAndOutline() {
 		// TODO optimize this
 		System.out.println("Recalculating holy land");
 		this.consecratedOutline.clear();
 		this.consecratedRegion.clear();
+		this.groundArea.clear();
+
+		if (this.deactivateHolyLand || !this.getCreationStage().isComplete()) {
+			System.out.println(deactivateHolyLand ? "Holy land inactive" : "");
+
+		}
 		for (ServerWorld world : this.consecrationNexi.keySet().stream().map((p) -> p.getWorld(this.data.getServer()))
 				.collect(Collectors.toSet())) {
 
 			Set<ServerPos> serverPositions = this.consecrationNexi.entrySet().stream()
 					.filter((en) -> en.getKey().getWorld(this.data.getServer()).equals(world)).map((m) -> m.getKey())
 					.collect(Collectors.toSet());
-
+			Set<Point> groundSet = Sets.newHashSet();
 			Set<BlockPos> blockSet = Sets.newHashSet();
 			Set<BlockPos> outline = Sets.newHashSet();
 			for (ServerPos p : serverPositions) {
 				world.notifyBlockUpdate(p, world.getBlockState(p), world.getBlockState(p), 1 | 2);
 				Rectangle r = consecrationNexi.get(p);
+				System.out.println(r);
 				for (int x = (int) r.getMinX(); x <= r.getMaxX(); x++) {
 					for (int z = (int) r.getMinY(); z <= r.getMaxY(); z++) {
-						for (int y = p.getY() - TOTAL_HOLY_LAND_HEIGHT / 2; y <= p.getY()
-								+ TOTAL_HOLY_LAND_HEIGHT / 2; y++) {
-							blockSet.add(new BlockPos(x, y, z));
+						if (!this.deactivateHolyLand && this.getCreationStage().isComplete()) {
+							for (int y = p.getY() - TOTAL_HOLY_LAND_HEIGHT / 2; y <= p.getY()
+									+ TOTAL_HOLY_LAND_HEIGHT / 2; y++) {
+								blockSet.add(new BlockPos(x, y, z));
+
+							}
 						}
+						groundSet.add(new Point(x, z));
 					}
 				}
-				BlockPos.Mutable mutable = new BlockPos.Mutable();
-				for (int x = (int) r.getMinX() - 1; x <= r.getMaxX() + 1; x++) {
+				if (!this.deactivateHolyLand && this.getCreationStage().isComplete()) {
 
-					for (int z = (int) r.getMinY() - 1; z <= r.getMaxY() + 1; z++) {
-						for (int y = p.getY() - TOTAL_HOLY_LAND_HEIGHT / 2 - 1; y <= p.getY()
-								+ TOTAL_HOLY_LAND_HEIGHT / 2 + 2; y++) {
-							mutable.setPos(x, y, z);
-							if (!blockSet.contains(mutable.toImmutable())) {
-								outline.add(mutable.toImmutable());
+					BlockPos.Mutable mutable = new BlockPos.Mutable();
+					for (int x = (int) r.getMinX() - 1; x <= r.getMaxX() + 1; x++) {
+
+						for (int z = (int) r.getMinY() - 1; z <= r.getMaxY() + 1; z++) {
+							for (int y = p.getY() - TOTAL_HOLY_LAND_HEIGHT / 2 - 1; y <= p.getY()
+									+ TOTAL_HOLY_LAND_HEIGHT / 2 + 2; y++) {
+								mutable.setPos(x, y, z);
+								if (!blockSet.contains(mutable)) {
+									outline.add(mutable.toImmutable());
+								}
 							}
 						}
 					}
@@ -716,7 +794,10 @@ public class Deity implements ICommandSource {
 			outline.removeIf(blockSet::contains);
 			this.consecratedRegion.put(world.getDimensionKey(), blockSet);
 			this.consecratedOutline.put(world.getDimensionKey(), outline);
+			this.groundArea.put(world.getDimensionKey(), groundSet);
 		}
+		System.out.println(groundArea.values().stream().flatMap((e) -> e.stream()).count() + " ground area");
+
 	}
 
 	@Override
@@ -724,12 +805,34 @@ public class Deity implements ICommandSource {
 		return this.name + " deity with " + this.invocation;
 	}
 
+	public String getHolyBookInfo() {
+
+		// TODO holy book info
+		return null;
+
+	}
+
 	public static enum CreationStage {
-		EMBRYONIC, RUDIMENTARY, COMPLETE
+		/** The deity is not even in the deity register yet */
+		EMBRYONIC,
+		/** The god has not had its settings finalized */
+		RUDIMENTARY, COMPLETE;
+
+		public boolean isComplete() {
+			return this == COMPLETE;
+		}
+
+		public boolean isRudimentary() {
+			return this == RUDIMENTARY;
+		}
+
+		public boolean isEmbryonic() {
+			return this == EMBRYONIC;
+		}
 	}
 
 	public static enum Level {
-		FIRST, INFUSION, AUTOMATION, WAR, MONOPOLY, APOCALYPSE
+		FIRST, INFUSION, AUTOMATION, WAR, MONOPOLY, APOCALYPSE;
 	}
 
 	public static class InvocationItems {

@@ -28,6 +28,7 @@ public abstract class ModTask implements Runnable {
 	 */
 	private ServerPlayerEntity sender = null;
 
+	@Override
 	public abstract void run();
 
 	public TaskEvent createEvent() {
@@ -89,7 +90,7 @@ public abstract class ModTask implements Runnable {
 	}
 
 	/**
-	 * Whether it can be called on the logical client, default true
+	 * Whether it can be sent to the logical client, default true
 	 * 
 	 * @return
 	 */
@@ -98,7 +99,7 @@ public abstract class ModTask implements Runnable {
 	}
 
 	/**
-	 * Whether it can be called on logical server, default true
+	 * Whether it can be sent to logical server, default true
 	 * 
 	 * @return
 	 */

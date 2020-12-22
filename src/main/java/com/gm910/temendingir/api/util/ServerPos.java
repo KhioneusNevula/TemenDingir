@@ -273,6 +273,10 @@ public class ServerPos extends BlockPos {
 		return new ServerPos(super.rotate(rotationIn), d);
 	}
 
+	public ServerSensitiveServerPos makeServerSensitive(MinecraftServer server) {
+		return new ServerSensitiveServerPos(this, server);
+	}
+
 	/**
 	 * Gets blockpos from nbt OR serverpos depending on whether the nbt is
 	 * configured for a serverpos or blockpos

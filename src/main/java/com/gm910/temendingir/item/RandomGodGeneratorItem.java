@@ -9,8 +9,11 @@ import com.gm910.temendingir.world.gods.Deity.NamingConvention;
 import com.gm910.temendingir.world.gods.cap.DeityData;
 
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUseContext;
 import net.minecraft.item.Items;
+import net.minecraft.item.Rarity;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -18,7 +21,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 public class RandomGodGeneratorItem extends ModItem {
 
 	public RandomGodGeneratorItem() {
-		super(new Item.Properties().maxStackSize(1));
+		super(new Item.Properties().maxStackSize(1).group(ItemGroup.TOOLS).rarity(Rarity.EPIC));
 	}
 
 	@Override
@@ -40,8 +43,9 @@ public class RandomGodGeneratorItem extends ModItem {
 		Item[] items = new Item[4];
 		while (items[0] == null || data.getFromItems(items) != null) {
 			for (int i = 0; i < 4; i++) {
-				items[i] = (ForgeRegistries.ITEMS.getValues()).stream().sorted((e, m) -> (new Random()).nextInt(2) - 1)
-						.findAny().orElse(Items.STONE);
+				items[i] = (ForgeRegistries.ITEMS.getValues()).stream()
+						.filter((e) -> e != Items.AIR && e.getRarity(new ItemStack(e)) != Rarity.EPIC)
+						.sorted((e, m) -> (new Random()).nextInt(2) - 1).findAny().orElse(Items.STONE);
 			}
 		}
 		deity.getInvocation().addAll(items);
