@@ -11,6 +11,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.particles.RedstoneParticleData;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.shapes.ISelectionContext;
@@ -52,17 +53,17 @@ public class DilmunExitPortal extends ModBlock {
 	}
 
 	@Override
-	public void onEntityCollision(BlockState state, World worldIn, BlockPos pos, Entity entityIn) {
+	public void onEntityCollision(BlockState state, World worldIn, BlockPos pos, Entity e) {
 
-		super.onEntityCollision(state, worldIn, pos, entityIn);
+		super.onEntityCollision(state, worldIn, pos, e);
 		if (!(worldIn instanceof ServerWorld))
 			return;
 		ServerWorld world = (ServerWorld) worldIn;
 		Deity d = DeityData.get(world.getServer()).getFromPositionWithinDilmun(pos);
 		if (d != null) {
-			if (!d.getExtraEntityInfo(entityIn.getUniqueID()).getBoolean("InDilmunPortal")) {
+			if (!d.getExtraEntityInfo(e.getUniqueID()).getBoolean("InDilmunPortal")) {
 				ServerPos former = ServerPos
-						.fromNBT(d.getExtraEntityInfo(entityIn.getUniqueID()).getCompound("PositionBeforeDilmun"));
+						.fromNBT(d.getExtraEntityInfo(e.getUniqueID()).getCompound("PositionBeforeDilmun"));
 				if (former == null) {
 					World over = world.getServer().getWorld(World.OVERWORLD);
 					BlockPos spawn = new BlockPos(over.getWorldInfo().getSpawnX(), over.getWorldInfo().getSpawnY(),
@@ -72,9 +73,15 @@ public class DilmunExitPortal extends ModBlock {
 				ServerWorld worldTo = former.getWorld(d.getData().getServer());
 				// TODO totally buggy dimensionalportation
 				if (worldTo != null) {
-					entityIn.setPosition(former.getX(), former.getY(), former.getZ());
-					entityIn.changeDimension(worldTo);
-					d.getExtraEntityInfo(entityIn.getUniqueID()).remove("PositionBeforeDilmun");
+					e.setPosition(former.getX(), former.getY(), former.getZ());
+					if (e instanceof ServerPlayerEntity) {
+						((ServerPlayerEntity) e).teleport(worldTo, former.getX(), former.getY(), former.getZ(),
+								e.rotationYaw, e.rotationPitch);
+
+					} else {
+						e.changeDimension(worldTo);
+					}
+					d.getExtraEntityInfo(e.getUniqueID()).remove("PositionBeforeDilmun");
 				}
 			}
 		}

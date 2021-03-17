@@ -46,6 +46,16 @@ public class DilmunHandler {
 	}
 
 	@SubscribeEvent
+	public static void placeBlock(BlockEvent.EntityPlaceEvent event) {
+		if (event.getWorld() instanceof ServerWorld) {
+			if (((ServerWorld) event.getWorld()).getDimensionKey().getLocation()
+					.equals(DimensionInit.DILMUN.getLocation())) {
+				event.setCanceled(true);
+			}
+		}
+	}
+
+	@SubscribeEvent
 	public static void explode(ExplosionEvent.Detonate event) {
 		if (!event.getWorld().isRemote && event.getWorld().getDimensionKey() == DimensionInit.DILMUN) {
 			event.getAffectedBlocks().clear();
@@ -58,24 +68,28 @@ public class DilmunHandler {
 			DeityData data = DeityData.get(event.getPlayer().getServer());
 			Deity deity = data.getFromFollowerUUID(event.getPlayer().getUniqueID());
 			if (deity == null) {
-				System.out.println("Godless heathen traveling to dilmun");
+				System.out.println("Godless player traveling to dilmun");
 				return;
 			}
-			if (deity.getDilmunChunk() == null) {
-				System.out.println("Claiming a dilmunic chunk for deity " + deity);
-				ChunkPos toClaim = claimNewDilmunChunk(deity);
+			new Thread(() -> {
+				synchronized (deity) {
+					if (deity.getDilmunChunk() == null) {
+						System.out.println("Claiming a dilmunic chunk for deity " + deity);
+						ChunkPos toClaim = claimNewDilmunChunk(deity);
 
-				deity.setDilmunChunk(toClaim);
-				System.out.println("Constructing a dilmunic structure for deity " + deity);
-				buildDilmunStructure(toClaim, deity);
-			}
-			ChunkPos dchunk = deity.getDilmunChunk();
-			if (deity.getExtraEntityInfo(event.getPlayer().getUniqueID()).contains("PositionBeforeDilmun")) {
-				System.out.println("Sending player " + event.getPlayer().getDisplayName().getString()
-						+ " to dilmunic chunk for deity " + deity + " at " + dchunk);
-				BlockPos positionTo = deity.getSettings().getExitPortal();
-				event.getPlayer().setPosition(positionTo.getX(), positionTo.getY() + 0.3, positionTo.getZ());
-			}
+						deity.setDilmunChunk(toClaim);
+						System.out.println("Constructing a dilmunic structure for deity " + deity);
+						buildDilmunStructure(toClaim, deity);
+					}
+					ChunkPos dchunk = deity.getDilmunChunk();
+					if (deity.getExtraEntityInfo(event.getPlayer().getUniqueID()).contains("PositionBeforeDilmun")) {
+						System.out.println("Sending player " + event.getPlayer().getDisplayName().getString()
+								+ " to dilmunic chunk for deity " + deity + " at " + dchunk);
+						BlockPos positionTo = deity.getSettings().getExitPortal();
+						event.getPlayer().setPosition(positionTo.getX(), positionTo.getY() + 0.3, positionTo.getZ());
+					}
+				}
+			}, "dilmundimensionTravel" + event.getPlayer().getScoreboardName()).start();
 		}
 	}
 
@@ -130,6 +144,7 @@ public class DilmunHandler {
 	}
 
 	public static boolean loadStructure(ResourceLocation name, ServerWorld world, BlockPos blockpos, Deity deity) {
+		System.out.println("Loading " + name + " for " + deity);
 		DilmunStructureConfig config = new DilmunStructureConfig(deity.getUuid().toString());
 		StructureManager manager = world.func_241112_a_();
 

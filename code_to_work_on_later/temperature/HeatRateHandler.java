@@ -56,6 +56,7 @@ public class HeatRateHandler {
 	private static final float IRON_VALUE = calcRate(0.3f);
 
 	public static void initTemperatureValues() {
+		System.out.println("Registering heat rates");
 		Object2FloatMap<Material> m = HEAT_RATE_MATERIAL_MAP;
 		Map<Block, Float> b = HEAT_RATE_BLOCK_MAP;
 		Set<Function<CachedBlockInfo, Float>> s = HEAT_RATE_SPECIFIC_BLOCK_FUNCTIONS;
@@ -114,6 +115,7 @@ public class HeatRateHandler {
 		s.add(makeTagChecker(BlockTags.WOODEN_BUTTONS, calcRate(50)));
 		s.add(makePropertyChecker(Blocks.SOUL_CAMPFIRE, CampfireBlock.LIT, Float.MAX_VALUE, true));
 
+		System.out.println("Registered heat rates");
 		MinecraftForge.EVENT_BUS.post(new HeatRateRegistrationEvent());
 	}
 

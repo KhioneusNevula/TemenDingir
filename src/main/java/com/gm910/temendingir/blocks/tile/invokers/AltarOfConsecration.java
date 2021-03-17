@@ -16,6 +16,7 @@ import com.gm910.temendingir.blocks.PylonOfConsecrationBlock;
 import com.gm910.temendingir.blocks.tile.ILinkTileNexus;
 import com.gm910.temendingir.init.BlockInit;
 import com.gm910.temendingir.init.TileInit;
+import com.gm910.temendingir.world.gods.cap.SyncingWorshiperData;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -25,7 +26,6 @@ import net.minecraft.block.pattern.BlockMaterialMatcher;
 import net.minecraft.block.pattern.BlockPattern;
 import net.minecraft.block.pattern.BlockPatternBuilder;
 import net.minecraft.block.pattern.BlockStateMatcher;
-import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
@@ -40,6 +40,8 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3i;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.TickEvent.PlayerTickEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -56,10 +58,36 @@ public class AltarOfConsecration extends InvokerTileEntity implements ITickableT
 
 	private static BlockPattern altarOfConsecrationPattern;
 
-	private Set<BlockPos> particlePositions = new HashSet<>();
-
 	public AltarOfConsecration() {
 		super(TileInit.ALTAR_OF_CONSECRATION.get());
+	}
+
+	@SubscribeEvent
+	public static void tick(PlayerTickEvent event) {
+		if (event.phase == TickEvent.Phase.START)
+			return;
+		if (event.side.isServer()) {
+
+			/*if (event.player.world.getGameTime() % 20 == 0) {
+				SyncingWorshiperData data = SyncingWorshiperData.get(event.player);
+				data.update(true);
+			}*/
+		} else {
+
+			SyncingWorshiperData data = SyncingWorshiperData.get(event.player);
+			if (data == null)
+				return;
+			Set<BlockPos> particles = data.getConsecrationBorders();
+			if (data.hasBeenInitialized()) {
+				for (BlockPos pos : particles) {
+					if (!event.player.world.isBlockLoaded(pos))
+						continue;
+					event.player.world.addParticle(ParticleTypes.ENCHANT, pos.getX() + 0.5 + GMWorld.getSmallOffset(1),
+							pos.getY() + 0.5 + GMWorld.getSmallOffset(1), pos.getZ() + 0.5 + GMWorld.getSmallOffset(1),
+							GMWorld.getSmallOffset(1), GMWorld.getSmallOffset(1), GMWorld.getSmallOffset(1));
+				}
+			}
+		}
 	}
 
 	@SubscribeEvent
@@ -108,11 +136,6 @@ public class AltarOfConsecration extends InvokerTileEntity implements ITickableT
 	@Override
 	public SUpdateTileEntityPacket getUpdatePacket() {
 		CompoundNBT nbt = new CompoundNBT();
-		if (invoked != null) {
-			this.particlePositions.clear();
-			this.particlePositions.addAll(invoked.getConsecratedOutline().get(world.getDimensionKey()));
-		}
-		nbt.put("ParticlePositions", GMNBT.makeList(this.particlePositions, (e) -> ServerPos.toNBT(e)));
 
 		// System.out.println("updating packet");
 		return new SUpdateTileEntityPacket(pos, -1, nbt);
@@ -121,34 +144,12 @@ public class AltarOfConsecration extends InvokerTileEntity implements ITickableT
 	@Override
 	public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
 		super.onDataPacket(net, pkt);
-		particlePositions.clear();
-		particlePositions.addAll(GMNBT.createList((ListNBT) pkt.getNbtCompound().get("ParticlePositions"), (inbt) -> {
-			return ServerPos.bpFromNBT((CompoundNBT) inbt);
-		}));
+
 	}
 
 	@Override
 	public void tick() {
-		if (world.isRemote) {
-			if (world.getGameTime() % 20 == 0) {
-				for (BlockPos pos2 : new HashSet<>(this.particlePositions)) {
-					if (!((ClientWorld) world).isBlockLoaded(pos2))
-						continue;
-					for (int i = 0; i < world.rand.nextInt(30); i++)
-						world.addOptionalParticle(ParticleTypes.ENCHANT, true, pos2.getX() + GMWorld.getSmallOffset(1),
-								pos2.getY() + GMWorld.getSmallOffset(1), pos2.getZ() + GMWorld.getSmallOffset(1), 0, 0,
-								0);
-				}
-			}
-			return;
-		}
 
-		if (invoked != null
-				&& particlePositions.size() != (invoked.getConsecratedOutline().get(world.getDimensionKey())).size()) {
-
-			this.markDirty();
-			world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 1 | 2);
-		}
 		if (invoked != null) {
 			if (!invoked.getCreationStage().isComplete()) {
 				Networking.sendToChunk(
@@ -231,8 +232,6 @@ public class AltarOfConsecration extends InvokerTileEntity implements ITickableT
 			}
 		}
 
-		this.particlePositions.clear();
-		this.particlePositions.addAll(invoked.getConsecratedOutline().get(world.getDimensionKey()));
 		// System.out.println(particlePositions);
 
 	}

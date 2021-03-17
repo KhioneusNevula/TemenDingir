@@ -8,6 +8,7 @@ import net.minecraft.particles.IParticleData;
 import net.minecraft.particles.ParticleType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -41,7 +42,8 @@ public class TaskParticles extends ModTask {
 
 	@Override
 	public void run() {
-
+		if (type == null)
+			return;
 		World world = getWorldRef();
 		if (world != null) {
 			if (world.isRemote) {
@@ -61,7 +63,8 @@ public class TaskParticles extends ModTask {
 	public CompoundNBT write() {
 		CompoundNBT data = new CompoundNBT();
 		data.putString("Particle", type.getType().getRegistryName().toString());
-		data.putString("Params", type.getParameters());
+		data.putString("Params",
+				type.getParameters().replace(Registry.PARTICLE_TYPE.getKey(type.getType()).toString(), ""));
 		data.putString("Dim", this.dim.toString());
 		data.put("Pos", GMNBT.writeVec3d(pos));
 		data.putBoolean("Op", this.optional);
@@ -81,7 +84,8 @@ public class TaskParticles extends ModTask {
 		try {
 			dat = type.getDeserializer().deserialize(type, reader);
 		} catch (Throwable e) {
-			throw new RuntimeException(e);
+			e.printStackTrace();
+			return;
 		}
 		this.type = dat;
 		this.dim = new ResourceLocation(nbt.getString("Dim"));

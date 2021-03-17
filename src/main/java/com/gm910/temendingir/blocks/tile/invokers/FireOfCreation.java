@@ -17,6 +17,7 @@ import net.minecraft.block.pattern.BlockPattern;
 import net.minecraft.block.pattern.BlockPatternBuilder;
 import net.minecraft.block.pattern.BlockStateMatcher;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
@@ -74,8 +75,11 @@ public class FireOfCreation extends InvokerTileEntity implements ITickableTileEn
 					invoked.getExtraEntityInfo(e.getUniqueID()).put("PositionBeforeDilmun", new ServerPos(e).toNBT());
 					invoked.getExtraEntityInfo(e.getUniqueID()).putBoolean("InDilmunPortal", true);
 
-					e.changeDimension(other);
-
+					if (e instanceof ServerPlayerEntity) {
+						((ServerPlayerEntity) e).teleport(other, 0, 0, 0, e.rotationYaw, e.rotationPitch);
+					} else {
+						e.changeDimension(other);
+					}
 				}
 			});
 		}

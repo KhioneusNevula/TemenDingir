@@ -1,24 +1,38 @@
 package com.gm910.temendingir.world.temperature;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
 import com.gm910.temendingir.TemenDingir;
+import com.gm910.temendingir.api.networking.messages.Networking;
+import com.gm910.temendingir.api.networking.messages.types.TaskParticles;
 import com.gm910.temendingir.api.util.GMNBT;
+import com.gm910.temendingir.api.util.ModReflect;
 import com.gm910.temendingir.capabilities.GMCaps;
 import com.gm910.temendingir.capabilities.IModCapability;
 import com.google.common.collect.Sets;
 import com.mojang.datafixers.util.Pair;
 
 import net.minecraft.block.Blocks;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.effect.LightningBoltEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
+import net.minecraft.particles.RedstoneParticleData;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.CachedBlockInfo;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
@@ -27,14 +41,18 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.Capability.IStorage;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.TickEvent.PlayerTickEvent;
+import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.world.BlockEvent.NeighborNotifyEvent;
 import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
 /**
  * We can say these temperatures start at absolute zero, but they are not
@@ -43,6 +61,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
  * @author borah
  *
  */
+@EventBusSubscriber
 public class Temperatures implements IModCapability<Chunk> {
 
 	public static final ResourceLocation NAME = new ResourceLocation(TemenDingir.MODID, "temperatures");
@@ -72,20 +91,84 @@ public class Temperatures implements IModCapability<Chunk> {
 	 */
 	private Set<BlockPos> nextTick = new HashSet<>();
 
+	/**
+	 * Entities assumed to have some sort of heat function
+	 */
+	private Set<Entity> trackingEntities = new HashSet<>();
+
+	private boolean loaded = false;
+
+	public static final ThreadGroup TEMPERATURE_THREADS = new ThreadGroup("temperatures");
+
+	private static List<Runnable> deferredTasks = new ArrayList<>();
+	private static Thread mainThread;
+	private static Thread loadThread;
+	private static List<Runnable> deferredLoadingTasks = new ArrayList<>();
+
+	private static Map<PlayerEntity, Thread> walkMeasuringThreads = new HashMap<>();
+
+	@SubscribeEvent
+	public static void measureAsWalkTesting(PlayerTickEvent event) {
+		if (event.side.isClient())
+			return;
+		if (event.phase == TickEvent.Phase.START)
+			return;
+		//System.out.println("Player tick event observed in chunk " + new ChunkPos(event.player.getPosition()));
+
+		if (!event.player.world.isBlockLoaded(event.player.getPosition()))
+			return;
+
+		//TODO MAKE THIS SINGULART INSTEAD OF PLAYER SPECIFIC
+		if (walkMeasuringThreads.get(event.player) == null) {
+
+			Thread run = new Thread(TEMPERATURE_THREADS, () -> {
+				while (event.player.world.getServer().isServerRunning()) {
+					if (event.player.world.getGameTime() % 10 != 0)
+						continue;
+					/*System.out.println(
+							"Showing temperatures for player chunk " + new ChunkPos(event.player.getPosition()));
+					*/
+					Stream<BlockPos> poses = BlockPos.getAllInBox(event.player.getPosition().add(-5, -5, -5),
+							event.player.getPosition().add(5, 5, 5));
+					Iterator<BlockPos> iter = poses.iterator();
+					while (iter.hasNext()) {
+						BlockPos pos = iter.next();
+						Temperatures temp = Temperatures.get(event.player.world, pos);
+						float t = temp.getTemperatureAt(pos);
+						event.player.world.getServer()
+								.deferTask(() -> Networking.sendToPlayer(new TaskParticles(
+										new RedstoneParticleData(Math.min(1, t / 100f), Math.min(1, t / 100f),
+												Math.min(1, 1 - t / 100f), 1f),
+										pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5,
+										event.player.world.getDimensionKey().getLocation(), 0, 0, 0, false, false,
+										false), (ServerPlayerEntity) event.player));
+					}
+				}
+			}, "walkingdisplays" + event.player.getName().getString());
+			walkMeasuringThreads.put(event.player, run);
+			run.start();
+		}
+	}
+
 	public Temperatures() {
 		MinecraftForge.EVENT_BUS.register(this);
+
 	}
 
 	public boolean isDefaultTemperature(BlockPos pos) {
 		if (outOfChunk(pos)) {
-			return get(chunk.getWorld().getChunkAt(pos)).isDefaultTemperature(pos);
+			ChunkPos c = new ChunkPos(pos);
+			return !chunk.getWorld().chunkExists(c.x, c.z) ? null
+					: get(chunk.getWorld().getChunkAt(pos)).isDefaultTemperature(pos);
 		}
 		return specificTemperatures.get(pos) == null;
 	}
 
 	public float getTemperatureAt(BlockPos pos) {
 		if (outOfChunk(pos)) {
-			return get(chunk.getWorld().getChunkAt(pos)).getTemperatureAt(pos);
+			ChunkPos c = new ChunkPos(pos);
+			return !chunk.getWorld().chunkExists(c.x, c.z) ? null
+					: get(chunk.getWorld().getChunkAt(pos)).getTemperatureAt(pos);
 		}
 		return specificTemperatures.getOrDefault(pos, this.defaultTemperature);
 	}
@@ -117,9 +200,13 @@ public class Temperatures implements IModCapability<Chunk> {
 	 */
 	public Float setTemperatureAt(BlockPos pos, Float value) {
 		if (outOfChunk(pos)) {
-			return get(chunk.getWorld().getChunkAt(pos)).setTemperatureAt(pos, value);
+			ChunkPos c = new ChunkPos(pos);
+			return !chunk.getWorld().chunkExists(c.x, c.z) ? null
+					: get(chunk.getWorld().getChunkAt(pos)).setTemperatureAt(pos, value);
 		}
-		return value == null ? this.specificTemperatures.remove(pos) : this.specificTemperatures.put(pos, value);
+		synchronized (specificTemperatures) {
+			return value == null ? this.specificTemperatures.remove(pos) : this.specificTemperatures.put(pos, value);
+		}
 	}
 
 	public Float changeTemperatureAt(BlockPos pos, float changeBy) {
@@ -142,16 +229,22 @@ public class Temperatures implements IModCapability<Chunk> {
 	 *                      heat travels
 	 * @return pair first = return, second = recalculated amount lost from initial
 	 */
+	@SuppressWarnings("resource")
 	public Pair<Float, Float> sendHeat(@Nullable BlockPos fromPos, float maxSend, BlockPos toPos, boolean load,
 			boolean doEvent, boolean calculateLoss) {
 
 		if (outOfChunk(toPos)) {
-			return get(chunk.getWorld().getChunkAt(toPos)).sendHeat(fromPos, maxSend, toPos, load, doEvent,
-					calculateLoss);
+			ChunkPos c = new ChunkPos(toPos);
+			return !chunk.getWorld().chunkExists(c.x, c.z) ? null
+					: get(chunk.getWorld().getChunkAt(toPos)).sendHeat(fromPos, maxSend, toPos, load, doEvent,
+							calculateLoss);
 		}
 		CachedBlockInfo cbi = new CachedBlockInfo(chunk.getWorld(), toPos, load);
-		if (cbi.getBlockState() == null)
+		if (cbi.getBlockState() == null) {
+			System.out
+					.println("cannot send heat to " + cbi.getPos() + " because it is null block state for some reason");
 			return null;
+		}
 
 		float rate = HeatRateHandler.getRateFor(cbi);
 		float passage = Math.min(rate, maxSend);
@@ -170,8 +263,11 @@ public class Temperatures implements IModCapability<Chunk> {
 			HeatPropagateEvent event = new HeatPropagateEvent(this, (ServerWorld) chunk.getWorld(),
 					fromPos == null ? new BlockPos(toPos.getX(), chunk.getWorld().getHeight(), toPos.getZ()) : fromPos,
 					toPos, passage, passage, ret, fromPos == null);
-			HeatFunctionHandler.EVENT_LISTENERS.forEach((c) -> c.accept(event));
-			MinecraftForge.EVENT_BUS.post(event);
+			HeatFunctionHandler.EVENT_LISTENERS.forEach((c) -> chunk.getWorld().getServer().deferTask(() -> {
+				System.out.println("Heat event occurring at " + event.getTo());
+				c.accept(event);
+			}));
+			chunk.getWorld().getServer().deferTask(() -> MinecraftForge.EVENT_BUS.post(event));
 			passage = event.getHeatAttained();
 			lostPassage = event.getHeatLost();
 			ret = event.getReturnHeat();
@@ -181,6 +277,7 @@ public class Temperatures implements IModCapability<Chunk> {
 
 	}
 
+	@SuppressWarnings("resource")
 	public void generateHeat(CachedBlockInfo cbi) {
 		float randomHeat = HeatEmitterHandler.getEmissionFor(cbi);
 		Random rand = chunk.getWorld().rand;
@@ -190,6 +287,7 @@ public class Temperatures implements IModCapability<Chunk> {
 			randomHeat *= -1;
 		}
 		if (randomHeat != 0) {
+			System.out.println("Generating heat for " + cbi.getBlockState());
 			this.changeTemperatureAt(cbi.getPos(), randomHeat);
 		}
 	}
@@ -199,10 +297,15 @@ public class Temperatures implements IModCapability<Chunk> {
 	 * 
 	 */
 	public Set<BlockPos> doTick(BlockPos at) {
+		System.out.println("Doing tick at " + at);
 		if (this.outOfChunk(at)) {
-			get(chunk.getWorld().getChunkAt(at)).doTick(at);
+			ChunkPos c = new ChunkPos(at);
+			if (chunk.getWorld().chunkExists(c.x, c.z)) {
+				get(chunk.getWorld().getChunkAt(at)).doTick(at);
+			}
 			return Sets.newHashSet();
 		}
+		System.out.println("Doing tick at " + at);
 		CachedBlockInfo cbi = new CachedBlockInfo(chunk.getWorld(), at, true);
 		Set<BlockPos> theSet = new HashSet<>();
 		this.generateHeat(cbi);
@@ -215,16 +318,21 @@ public class Temperatures implements IModCapability<Chunk> {
 	}
 
 	/**
-	 * Does the act of propagating heat from the given block to surrounding ones
+	 * Does the act of propagating heat from the given block to surrounding ones.
+	 * null if the chunk is not loaded
 	 * 
 	 * @param at
 	 */
+	@SuppressWarnings("resource")
 	public Set<BlockPos> doPropagations(CachedBlockInfo cbi) {
 		BlockPos at = cbi.getPos();
 		if (outOfChunk(at)) {
-			return get(chunk.getWorld().getChunkAt(at)).doPropagations(cbi);
+			ChunkPos c = new ChunkPos(at);
+			return !cbi.getWorld().chunkExists(c.x, c.z) ? null
+					: get(chunk.getWorld().getChunkAt(at)).doPropagations(cbi);
 
 		}
+		System.out.println("Doing heat propagation at " + cbi.getPos());
 		Random rand = chunk.getWorld().rand;
 		Set<BlockPos> theSet = new HashSet<>();
 		for (Direction dir : Direction.values()) {
@@ -232,7 +340,6 @@ public class Temperatures implements IModCapability<Chunk> {
 			float currentHeat = this.getTemperatureAt(at);
 			float otherHeat = this.getTemperatureAt(to);
 			if (otherHeat >= currentHeat) {
-				theSet.add(to);
 				continue; // If the other block is hotter, it will diffuse into this block anyway so skip it
 			}
 			float diff = currentHeat - otherHeat;
@@ -253,42 +360,122 @@ public class Temperatures implements IModCapability<Chunk> {
 
 	@SubscribeEvent
 	public void loaded(ChunkEvent.Load event) {
+		//System.out.println("Load chunk event observed by " + chunk.getPos());
 		if (event.getWorld().isRemote() || event.getChunk() != this.chunk) {
 			return;
 		}
-		chunk.getWorld().getServer().deferTask(this::onChunkLoad);
+		if (mainThread == null || !mainThread.isAlive()) {
+			MinecraftServer server = chunk.getWorld().getServer();
+			deferredTasks.clear();
+			mainThread = new Thread(TEMPERATURE_THREADS, () -> {
+				while (server.isServerRunning()) {
+					ArrayList<Runnable> ls = new ArrayList<>();
+					synchronized (deferredTasks) {
+						deferredTasks.removeIf((e) -> e == null);
+						ls = new ArrayList<>(deferredTasks);
+					}
+					for (Runnable runnable : ls) {
+						runnable.run();
+						deferredTasks.remove(runnable);
+					}
+				}
+			}, "chunkTemperatureThread:" + server);
+			mainThread.start();
+		}
+		if (loadThread == null || !loadThread.isAlive()) {
+			MinecraftServer server = chunk.getWorld().getServer();
+			deferredLoadingTasks.clear();
+			loadThread = new Thread(TEMPERATURE_THREADS, () -> {
+				while (server.isServerRunning()) {
+					deferredLoadingTasks.removeAll(Collections.singleton(null));
+					for (Runnable runnable : new ArrayList<>(deferredLoadingTasks)) {
+						runnable.run();
+						deferredLoadingTasks.remove(runnable);
+					}
+				}
+			}, "loadTemperatureThread:" + server);
+			loadThread.start();
+		}
+		//System.out.println("Deferring chunkload task for " + chunk.getPos());
+		addDeferredLoadingTask(this::onChunkLoad, false);
+
+	}
+
+	@SubscribeEvent
+	public void unloaded(ChunkEvent.Unload event) {
+		//System.out.println("Unload chunk event observed by " + chunk.getPos());
+		if (event.getWorld().isRemote() || event.getChunk() != this.chunk) {
+			return;
+		}
+		System.out.println("Temp chunk unloaded at " + event.getChunk().getPos());
+		addDeferredLoadingTask(() -> this.loaded = false, false);
 	}
 
 	@SubscribeEvent
 	public void update(NeighborNotifyEvent event) {
-		if (event.getWorld().isRemote() || event.getWorld().getChunk(event.getPos()) != this.chunk) {
+		if (!loaded || event.getWorld().isRemote() || event.getWorld().getChunk(event.getPos()) != this.chunk) {
 			return;
 		}
-		this.checkIfMonitored(event.getPos());
+		addDeferredTask(() -> {
+			this.checkIfMonitored(event.getPos());
+			this.performSunlightHeating();
+		}, false);
 	}
 
 	@SubscribeEvent
 	public void update(TickEvent.WorldTickEvent event) {
-		if (event.side.isClient() || event.phase == TickEvent.Phase.START
-				|| event.world.chunkExists(chunk.getPos().x, chunk.getPos().z)
+		//System.out.println("World tick event observed by " + chunk.getPos());
+		if (!loaded || event.side.isClient() || event.phase == TickEvent.Phase.START
+				|| !event.world.chunkExists(chunk.getPos().x, chunk.getPos().z)
 				|| event.world.getChunk(chunk.getPos().asBlockPos()) != chunk) {
 			return;
 		}
-		Set<BlockPos> positionsToBeTicked = new HashSet<>(this.monitoredBlocks);
-		positionsToBeTicked.addAll(this.nextTick);
-		this.nextTick.clear();
-		for (BlockPos pos : positionsToBeTicked) {
-			if (event.world.getChunk(pos) != this) {
-				if (event.world.getChunk(pos) != null) {
-					get(event.world.getChunkAt(pos)).nextTick.add(pos);
+		//System.out.println("Starting world temperature propagation events for " + chunk.getPos());
+
+		addDeferredTask(() -> {
+			Set<BlockPos> positionsToBeTicked = new HashSet<>(this.monitoredBlocks);
+			positionsToBeTicked.addAll(this.nextTick);
+			this.performEntityHeating();
+			int count = 40;
+			for (BlockPos pos : positionsToBeTicked) {
+				if (event.world.getChunk(pos) != this) {
+					if (event.world.getChunk(pos) != null) {
+						get(event.world.getChunkAt(pos)).nextTick.add(pos);
+					}
+					continue;
 				}
-				continue;
+				this.nextTick.remove(pos);
+				this.nextTick.addAll(this.doTick(pos));
+				count--;
+				if (count <= 0) {
+					break;
+				}
 			}
-			this.nextTick.addAll(this.doTick(pos));
+		}, true);
 
+	}
+
+	/**
+	 * TODO make this more general. <br>
+	 * Performs all actions relating to entities creating heat in the world
+	 */
+	public void performEntityHeating() {
+		for (Entity e : this.trackingEntities) {
+			System.out.println("Entity " + (e.getDisplayName() != null ? e.getDisplayName().getString() : e)
+					+ "heating for " + chunk.getPos());
+			if (e instanceof LightningBoltEntity) {
+				LightningBoltEntity bolt = (LightningBoltEntity) e;
+				BlockPos pos = bolt.getPosition();
+				for (int x = -3; x <= 3; x++) {
+					for (int y = -3; y <= 9; y++) {
+						for (int z = -3; z <= 3; z++) {
+							BlockPos newPos = pos.add(x, y, z);
+							this.sendHeat(null, 500, newPos, true, true, true);
+						}
+					}
+				}
+			}
 		}
-
-		this.performSunlightHeating();
 
 	}
 
@@ -311,7 +498,25 @@ public class Temperatures implements IModCapability<Chunk> {
 		}
 	}
 
+	/**
+	 * if chunk.loaded is true
+	 * 
+	 * @param chunk
+	 * @return
+	 */
+	public static boolean isLoaded(Chunk chunk) {
+		return ModReflect.getField(Chunk.class, boolean.class, "loaded", "field_76636_d", chunk);
+	}
+
 	public void onChunkLoad() {
+		if (loaded)
+			return;
+		//System.out.println("Chunk load task for " + chunk.getPos());
+		if (chunk.getStatus() != ChunkStatus.FULL || !isLoaded(chunk)) {
+			/*System.out.println(
+					"Deferring chunkload task for " + chunk.getPos() + " AGAIN. Chunk status is " + chunk.getStatus());
+			*/chunk.getWorld().getServer().deferTask(this::onChunkLoad);
+		}
 		ChunkPos cpos = chunk.getPos();
 		float defaultTemp = 0;
 		int count = 0;
@@ -326,6 +531,9 @@ public class Temperatures implements IModCapability<Chunk> {
 		}
 		defaultTemp /= count;
 		this.defaultTemperature = defaultTemp;
+		this.loaded = true;
+		//System.out.println("Temperature chunk loaded at " + chunk.getPos());
+
 	}
 
 	/**
@@ -334,13 +542,65 @@ public class Temperatures implements IModCapability<Chunk> {
 	 * @param at
 	 */
 	public void checkIfMonitored(BlockPos at) {
-		if (HeatFunctionHandler.shouldBeMonitored(new CachedBlockInfo(chunk.getWorld(), at, true))) {
+		if (!monitoredBlocks.contains(at)
+				&& HeatFunctionHandler.shouldBeMonitored(new CachedBlockInfo(chunk.getWorld(), at, true))) {
 			this.monitoredBlocks.add(at);
 		}
 	}
 
 	public float getDefaultTemperature() {
 		return defaultTemperature;
+	}
+
+	@SubscribeEvent
+	public void enteringChunk(EntityEvent.EnteringChunk event) {
+		if (!loaded || !event.getEntity().isAddedToWorld() || event.getEntity().world.isRemote) {
+
+			return;
+		}
+
+		if (event.getEntity().world.getChunk(event.getNewChunkX(), event.getNewChunkZ()) == this.chunk) {
+			if (event.getEntity() instanceof LightningBoltEntity) {
+				// TODO make this more general
+				if (!trackingEntities.contains(event.getEntity()))
+					deferredTasks.add(() -> {
+						if (this.trackingEntities.add(event.getEntity()))
+							System.out.println("Added "
+									+ (event.getEntity().getDisplayName() == null ? event.getEntity()
+											: event.getEntity().getDisplayName().getString())
+									+ " to temp chunk " + chunk.getPos());
+					});
+			}
+		} else if (event.getEntity().world.getChunk(event.getOldChunkX(), event.getOldChunkZ()) == this.chunk) {
+			if (trackingEntities.contains(event.getEntity()))
+				deferredTasks.add(() -> {
+					if (this.trackingEntities.remove(event.getEntity()))
+						System.out.println("Removed "
+								+ (event.getEntity().getDisplayName() == null ? event.getEntity()
+										: event.getEntity().getDisplayName().getString())
+								+ " from temp chunk " + chunk.getPos());
+				});
+
+		}
+	}
+
+	public static void addDeferredTask(Runnable task, boolean prioritize) {
+		synchronized (deferredTasks) {
+			if (prioritize)
+				deferredTasks.add(0, task);
+			else
+				deferredTasks.add(task);
+
+		}
+	}
+
+	public static void addDeferredLoadingTask(Runnable task, boolean prioritize) {
+		synchronized (deferredLoadingTasks) {
+			if (prioritize)
+				deferredLoadingTasks.add(0, task);
+			else
+				deferredLoadingTasks.add(task);
+		}
 	}
 
 	@Override

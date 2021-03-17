@@ -9,6 +9,8 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.pattern.BlockPattern;
 import net.minecraft.block.pattern.BlockPattern.PatternHelper;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.Direction;
@@ -101,6 +103,17 @@ public abstract class InvokerTileEntity extends TileEntity {
 			revertState();
 		} else {
 		}
+	}
+
+	@Override
+	public SUpdateTileEntityPacket getUpdatePacket() {
+		return new SUpdateTileEntityPacket(pos, -1, write(new CompoundNBT()));
+	}
+
+	@Override
+	public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
+		super.onDataPacket(net, pkt);
+		read(this.getBlockState(), pkt.getNbtCompound());
 	}
 
 }

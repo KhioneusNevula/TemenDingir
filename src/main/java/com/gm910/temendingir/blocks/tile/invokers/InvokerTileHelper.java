@@ -176,7 +176,7 @@ public abstract class InvokerTileHelper<Tile extends InvokerTileEntity, Creation
 	public abstract ServerSensitiveServerPos getPosForPlacementFromCreationEvent(CreationEvent event);
 
 	public void onCreation(CreationEvent event) {
-		System.out.println("Checking event for " + name);
+		//System.out.println("Checking event for " + name);
 		ServerSensitiveServerPos operativePos = getPosForPlacementFromCreationEvent(event);
 		if (operativePos == null)
 			return;

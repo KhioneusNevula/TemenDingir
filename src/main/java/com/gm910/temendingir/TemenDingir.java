@@ -11,9 +11,6 @@ import com.gm910.temendingir.init.ItemInit;
 import com.gm910.temendingir.init.StructureInit;
 import com.gm910.temendingir.init.TileInit;
 import com.gm910.temendingir.keys.ModKeys;
-import com.gm910.temendingir.world.temperature.HeatEmitterHandler;
-import com.gm910.temendingir.world.temperature.HeatFunctionHandler;
-import com.gm910.temendingir.world.temperature.HeatRateHandler;
 
 import net.minecraft.block.Block;
 import net.minecraftforge.common.MinecraftForge;
@@ -103,9 +100,9 @@ public class TemenDingir {
 	public void onServerStarting(FMLServerStartingEvent event) {
 		// do something when the server starts
 		InvokerTileHelper.registerAll();
-		HeatRateHandler.initTemperatureValues();
+		/*HeatRateHandler.initTemperatureValues();
 		HeatEmitterHandler.initTemperatureValues();
-		HeatFunctionHandler.initSet();
+		HeatFunctionHandler.initSet();*/
 	}
 
 	// You can use EventBusSubscriber to automatically subscribe events on the

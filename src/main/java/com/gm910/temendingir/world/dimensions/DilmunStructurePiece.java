@@ -190,6 +190,7 @@ public class DilmunStructurePiece {
 			 * .sendMessage(new StringTextComponent("Reached data gen stage of generation"),
 			 * e.getUniqueID()));
 			 */
+			System.out.println("Handling data marker " + function);
 			// TODO complete the handling of the data marker
 			DeityDilmunSettings settings = this.getDeity(worldIn).getSettings();
 

@@ -4,7 +4,6 @@ import com.gm910.temendingir.TemenDingir;
 import com.gm910.temendingir.item.BindingScepterItem;
 import com.gm910.temendingir.item.GodListerItem;
 import com.gm910.temendingir.item.RandomGodGeneratorItem;
-import com.gm910.temendingir.item.ThermometerItem;
 
 import net.minecraft.item.Item;
 import net.minecraft.tags.ITag;
@@ -29,7 +28,7 @@ public final class ItemInit {
 			RandomGodGeneratorItem::new);
 
 	public static final RegistryObject<Item> GOD_LISTER = ITEMS.register("god_lister", GodListerItem::new);
-	public static final RegistryObject<Item> THERMOMETER = ITEMS.register("thermometer", ThermometerItem::new);
+	//public static final RegistryObject<Item> THERMOMETER = ITEMS.register("thermometer", ThermometerItem::new);
 
 	public static void registerISTERs() {
 

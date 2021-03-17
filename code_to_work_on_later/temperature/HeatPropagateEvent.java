@@ -37,7 +37,7 @@ public class HeatPropagateEvent extends BlockEvent {
 
 	private Temperatures temperatureHandler;
 
-	private boolean isSunlight;
+	private boolean isSunlightOrEntity;
 
 	public HeatPropagateEvent(Temperatures temperatureHandler, ServerWorld world, BlockPos from, BlockPos to,
 			float heatAttained, float heatLost, float returnHeat, boolean isSunlight) {
@@ -52,17 +52,17 @@ public class HeatPropagateEvent extends BlockEvent {
 		Vector3i betweenVec = to.subtract(from);
 		this.direction = Direction.getFacingFromVector(betweenVec.getX(), betweenVec.getY(), betweenVec.getZ());
 		this.temperatureHandler = temperatureHandler;
-		this.isSunlight = isSunlight;
+		this.isSunlightOrEntity = isSunlight;
 	}
 
 	/**
-	 * If the temperature propagation was from sunlight; this means getFrom will be
-	 * the highest y value but the same x,z, as getTo
+	 * If the temperature propagation was from sunlight or an entity; this means
+	 * getFrom will be the highest y value but the same x,z, as getTo
 	 * 
 	 * @return
 	 */
-	public boolean isSunlight() {
-		return isSunlight;
+	public boolean isSunlightOrEntity() {
+		return isSunlightOrEntity;
 	}
 
 	@Override
@@ -150,6 +150,17 @@ public class HeatPropagateEvent extends BlockEvent {
 
 	public float predictTemperatureAtFrom() {
 		return temperatureHandler.getTemperatureAt(getPos()) - heatLost + returnHeat;
+	}
+
+	/**
+	 * 
+	 * @param from if this is true, uses the position heat comes from
+	 * @return
+	 */
+	public float predictTemperature(boolean from) {
+		if (from)
+			return predictTemperatureAtFrom();
+		return predictTemperatureAtTo();
 	}
 
 	public Temperatures getTemperatureHandler() {

@@ -15,6 +15,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.CampfireBlock;
 import net.minecraft.block.FireBlock;
+import net.minecraft.block.RedstoneLampBlock;
 import net.minecraft.block.material.Material;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.state.Property;
@@ -22,6 +23,7 @@ import net.minecraft.tags.ITag;
 import net.minecraft.tileentity.AbstractFurnaceTileEntity;
 import net.minecraft.util.CachedBlockInfo;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
 /**
  * This handles the amount of heat that certain blocks give off continuously in
@@ -31,6 +33,7 @@ import net.minecraftforge.common.MinecraftForge;
  * @author borah
  *
  */
+@EventBusSubscriber
 public class HeatEmitterHandler {
 
 	public static final float DEFAULT = 0;
@@ -52,6 +55,7 @@ public class HeatEmitterHandler {
 	public static final Set<Function<CachedBlockInfo, Float>> HEAT_EMISSION_SPECIFIC_BLOCK_FUNCTIONS = new HashSet<>();
 
 	public static void initTemperatureValues() {
+		System.out.println("Registering heat emitters");
 		Map<Material, Float> m = HEAT_EMISSION_MATERIAL_MAP;
 		Map<Block, Float> b = HEAT_EMISSION_BLOCK_MAP;
 		Set<Function<CachedBlockInfo, Float>> s = HEAT_EMISSION_SPECIFIC_BLOCK_FUNCTIONS;
@@ -60,16 +64,18 @@ public class HeatEmitterHandler {
 		m.put(Material.DRAGON_EGG, 5f);
 		//m.put(Material.STRUCTURE_VOID, 0);
 
-		b.put(Blocks.TORCH, 10f);
+		b.put(Blocks.TORCH, 4f);
 		//b.put(Blocks.SOUL_FIRE, 0f);
 		b.put(Blocks.NETHER_PORTAL, 50f);
 		//b.put(Blocks.END_PORTAL, 0f);
 		b.put(Blocks.MAGMA_BLOCK, 100f);
-		b.put(Blocks.GLOWSTONE, 30f);
+		b.put(Blocks.GLOWSTONE, 20f);
 
+		s.add(makePropertyChecker(Blocks.REDSTONE_LAMP, RedstoneLampBlock.LIT, true, 20f));
 		s.add(makeFireAgeChecker());
 		s.add(makeFurnaceChecker());
 		s.add(makeCampfireChecker());
+		System.out.println("Registered heat emitters");
 
 		MinecraftForge.EVENT_BUS.post(new HeatEmissionRegistrationEvent());
 	}
@@ -111,7 +117,7 @@ public class HeatEmitterHandler {
 			if (state.getBlock() != Blocks.FIRE)
 				return null;
 
-			int age = state.get(FireBlock.AGE) + 1;
+			int age = Math.max(0, 15 - state.get(FireBlock.AGE) - 1);
 			return Math.max(age, 5) * 20f;
 
 		});
@@ -123,9 +129,9 @@ public class HeatEmitterHandler {
 
 			BlockState state = cbi.getBlockState();
 			if (!(state.getBlock() instanceof AbstractFurnaceBlock))
-				return DEFAULT;
+				return null;
 			if (!(state.get(AbstractFurnaceBlock.LIT)))
-				return DEFAULT;
+				return null;
 			AbstractFurnaceTileEntity furnace = (AbstractFurnaceTileEntity) cbi.getTileEntity();
 			float burntime = furnace.write(new CompoundNBT()).getInt("BurnTime") / 100f;
 			float heat = -3f / (burntime + 0.3f) + 10f;
@@ -150,10 +156,6 @@ public class HeatEmitterHandler {
 			float value) {
 
 		return ((cbi) -> cbi.getBlockState().isIn(tag) ? value : null);
-	}
-
-	public static enum HeatType {
-		RAISE_TO, COOL_TO, MAINTAIN
 	}
 
 }

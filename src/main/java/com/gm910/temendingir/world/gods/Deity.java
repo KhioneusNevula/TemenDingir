@@ -835,6 +835,17 @@ public class Deity implements ICommandSource {
 		FIRST, INFUSION, AUTOMATION, WAR, MONOPOLY, APOCALYPSE;
 	}
 
+	/**
+	 * Representation of a position in the deity's chain of command; High Priest,
+	 * Priest, maybe allow custom positions? TODO make hierarchic position stuf
+	 * 
+	 * @author borah
+	 *
+	 */
+	public static class HierarchicPosition {
+
+	}
+
 	public static class InvocationItems {
 		public static final int NUMBER = 4;
 		List<Item> items = new ArrayList<>();

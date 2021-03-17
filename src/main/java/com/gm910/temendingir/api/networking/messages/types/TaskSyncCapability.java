@@ -1,5 +1,7 @@
 package com.gm910.temendingir.api.networking.messages.types;
 
+import javax.annotation.Nullable;
+
 import com.gm910.temendingir.api.networking.messages.ModTask;
 import com.gm910.temendingir.api.util.ModReflect;
 import com.gm910.temendingir.capabilities.GMCaps;
@@ -20,18 +22,21 @@ public class TaskSyncCapability extends ModTask {
 
 	public String capField;
 
+	public String capFieldObfusName;
+
 	public ResourceLocation dim;
 
 	public TaskSyncCapability() {
 
 	}
 
-	public <T> TaskSyncCapability(int entityId, String field, LivingEntity en) {
+	public <T> TaskSyncCapability(String field, @Nullable String capfieldobfusname, Entity en) {
 		Capability<T> cap = ModReflect.getField(GMCaps.class, Capability.class, field, null, null);
 		this.capComp = cap.writeNBT(en.getCapability(cap).orElse(null), (Direction) null);
 		this.entity = en.getEntityId();
 		this.dim = en.world.getDimensionKey().getLocation();
 		this.capField = field;
+		this.capFieldObfusName = capfieldobfusname;
 	}
 
 	@Override
@@ -40,11 +45,9 @@ public class TaskSyncCapability extends ModTask {
 			return;
 		}
 		Entity e = getWorldRef().getEntityByID(entity);
-		if (!(e instanceof LivingEntity)) {
-			System.out.println("Tried to sync capability data but seems to have gotten wrong entity");
-		}
+
 		LivingEntity entity = (LivingEntity) e;
-		Capability cap = ModReflect.getField(GMCaps.class, Capability.class, capField, null, null);
+		Capability cap = ModReflect.getField(GMCaps.class, Capability.class, capField, capFieldObfusName, null);
 		cap.readNBT(entity.getCapability(cap).orElse(null), null, capComp);
 
 	}
@@ -56,6 +59,8 @@ public class TaskSyncCapability extends ModTask {
 		nbt.putInt("entity", entity);
 		nbt.putString("dim", dim.toString());
 		nbt.putString("field", capField);
+		if (capFieldObfusName != null)
+			nbt.putString("obfusfield", capFieldObfusName);
 		return nbt;
 	}
 
@@ -66,6 +71,8 @@ public class TaskSyncCapability extends ModTask {
 		entity = nbt.getInt("entity");
 		dim = new ResourceLocation(nbt.getString("dim"));
 		capField = nbt.getString("field");
+		if (nbt.contains("obfusfield"))
+			capFieldObfusName = nbt.getString("obfusfield");
 	}
 
 	@Override
